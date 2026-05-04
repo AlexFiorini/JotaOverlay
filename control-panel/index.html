@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Control Panel — JotaOverlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Status bar -->
+<div id="status-bar" class="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span id="status-text">Connecting...</span>
+  <span class="status-rl" id="rl-status">🎮 RL: Disconnected</span>
+  <span class="overlay-link">
+    Overlay: <a href="http://localhost:3000" target="_blank">localhost:3000</a>
+  </span>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="principal" id="tab-principal">Main</button>
+  <button class="tab-btn" data-tab="equipos" id="tab-equipos">Teams</button>
+</div>
+
+<!-- ══════════════════════════════════════ TAB: MAIN ═══ -->
+<div id="tab-principal-content" class="tab-content active">
+
+  <!-- Event name -->
+  <section class="section">
+    <h3 class="section-title">📺 Event</h3>
+    <div class="field-row">
+      <label class="field-label" for="input-event">Event Name</label>
+      <input type="text" id="input-event" class="input-text"
+             placeholder="ROCKET LEAGUE 2026 LAST CHANCE QUALIFIER EU | DAY 3...">
+    </div>
+  </section>
+
+  <!-- Teams -->
+  <section class="section">
+    <h3 class="section-title">🛡️ Teams</h3>
+    <div class="teams-grid">
+
+      <!-- Blue team -->
+      <div class="team-card team-card-blue">
+        <div class="team-card-header blue-header">BLUE TEAM</div>
+        <div class="team-logo-preview-wrap">
+          <img id="preview-logo-blue" class="team-logo-preview" src="../assets/rl.png" alt="">
+          <div class="logo-edit-side">
+            <label class="btn btn-ghost btn-sm" for="input-logo-blue" title="Change Logo">📁 Select</label>
+            <input type="file" id="input-logo-blue" class="input-file-hidden" accept="image/*">
+          </div>
+        </div>
+        <div class="field-row">
+          <label class="field-label" for="select-saved-blue">Saved Team</label>
+          <select id="select-saved-blue" class="input-select">
+            <option value="">— Manual —</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="field-label" for="input-name-blue">Name</label>
+          <div style="display: flex; gap: 6px; width: 100%;">
+            <input type="text" id="input-name-blue" class="input-text" placeholder="TEAM NAME" style="flex: 1;">
+            <button class="btn btn-ghost btn-sm" id="btn-pull-name-blue" title="Pull name from RL API">
+              <img src="api-name.png" alt="API" style="height: 14px;">
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-blue btn-full" id="btn-apply-blue">Apply Blue Team</button>
+      </div>
+
+      <!-- Orange team -->
+      <div class="team-card team-card-orange">
+        <div class="team-card-header orange-header">ORANGE TEAM</div>
+        <div class="team-logo-preview-wrap">
+          <img id="preview-logo-orange" class="team-logo-preview" src="../assets/rl.png" alt="">
+          <div class="logo-edit-side">
+            <label class="btn btn-ghost btn-sm" for="input-logo-orange" title="Change Logo">📁 Select</label>
+            <input type="file" id="input-logo-orange" class="input-file-hidden" accept="image/*">
+          </div>
+        </div>
+        <div class="field-row">
+          <label class="field-label" for="select-saved-orange">Saved Team</label>
+          <select id="select-saved-orange" class="input-select">
+            <option value="">— Manual —</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="field-label" for="input-name-orange">Name</label>
+          <div style="display: flex; gap: 6px; width: 100%;">
+            <input type="text" id="input-name-orange" class="input-text" placeholder="TEAM NAME" style="flex: 1;">
+            <button class="btn btn-ghost btn-sm" id="btn-pull-name-orange" title="Pull name from RL API">
+              <img src="api-name.png" alt="API" style="height: 14px;">
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-orange btn-full" id="btn-apply-orange">Apply Orange Team</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Series & Best-of -->
+  <section class="section">
+    <h3 class="section-title">🏆 Series</h3>
+    <div class="series-row">
+
+      <!-- Blue series -->
+      <div class="series-ctrl">
+        <span class="series-label series-label-blue">BLUE</span>
+        <div class="series-counter">
+          <button class="btn-counter" id="btn-series-blue-minus">−</button>
+          <span class="series-value" id="val-series-blue">0</span>
+          <button class="btn-counter" id="btn-series-blue-plus">+</button>
+        </div>
+      </div>
+
+      <!-- Best-of selector -->
+      <div class="best-of-ctrl">
+        <span class="series-label">BEST OF</span>
+        <div class="best-of-options">
+          <label class="bo-opt"><input type="radio" name="bestof" value="1"> 1</label>
+          <label class="bo-opt"><input type="radio" name="bestof" value="3"> 3</label>
+          <label class="bo-opt"><input type="radio" name="bestof" value="5" checked> 5</label>
+          <label class="bo-opt"><input type="radio" name="bestof" value="7"> 7</label>
+          <!-- Comentado porque el diseño no está preparado para un BO9, y por la poca frecuencia de estos enfrentamientos <label class="bo-opt"><input type="radio" name="bestof" value="9"> 9</label> -->
+        </div>
+      </div>
+
+      <!-- Orange series -->
+      <div class="series-ctrl">
+        <span class="series-label series-label-orange">ORANGE</span>
+        <div class="series-counter">
+          <button class="btn-counter" id="btn-series-orange-minus">−</button>
+          <span class="series-value" id="val-series-orange">0</span>
+          <button class="btn-counter" id="btn-series-orange-plus">+</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Game Number (New row) -->
+    <div class="game-num-row" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; display: flex; align-items: center; justify-content: center; gap: 30px;">
+      <div class="series-ctrl" style="width: auto;">
+        <span class="series-label">CURRENT GAME</span>
+        <div class="series-counter">
+          <button class="btn-counter" id="btn-game-minus">−</button>
+          <span class="series-value" id="val-game-number">1</span>
+          <button class="btn-counter" id="btn-game-plus">+</button>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-game-reset">Reset to 0</button>
+    </div>
+  </section>
+
+  <!-- View controls -->
+  <section class="section">
+    <h3 class="section-title">🎬 Overlay View</h3>
+    <div class="view-btns">
+      <button class="btn btn-primary" id="btn-force-scoreboard">📊 Show Scoreboard</button>
+      <button class="btn btn-secondary" id="btn-force-hud">🎮 Return to HUD</button>
+    </div>
+  </section>
+
+  <!-- Signature -->
+  <div class="signature">
+    Made with ❤️ by <a href="https://x.com/jotasonder" target="_blank">@jotasonder</a>
+  </div>
+
+</div><!-- /tab-principal-content -->
+
+
+<!-- ════════════════════════════════════════════ TAB: TEAMS ═══ -->
+<div id="tab-equipos-content" class="tab-content">
+
+  <section class="section">
+    <h3 class="section-title">➕ Add / Edit Team</h3>
+    <div class="add-team-form">
+      <div class="add-team-logo-preview-wrap">
+        <img id="add-team-logo-preview" class="add-team-logo-preview" src="../assets/rl.png" alt="">
+      </div>
+      <div class="add-team-fields">
+        <div class="field-row">
+          <label class="field-label" for="add-team-name">Team Name</label>
+          <input type="text" id="add-team-name" class="input-text" placeholder="KARMINE CORP">
+        </div>
+        <div class="field-row">
+          <label class="field-label" for="add-team-logo">Logo (Image)</label>
+          <input type="file" id="add-team-logo" class="input-file" accept="image/*">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-save-team">💾 Save Team</button>
+          <button class="btn btn-ghost" id="btn-clear-team-form">Clear</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">📋 Saved Teams</h3>
+    <div id="teams-list" class="teams-list">
+      <p class="empty-msg" id="teams-empty">No saved teams yet.</p>
+    </div>
+  </section>
+
+</div><!-- /tab-equipos-content -->
+
+<script src="app.js"></script>
+</body>
+</html>
