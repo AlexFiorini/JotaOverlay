@@ -13,6 +13,11 @@ This project is a professional overlay system for Rocket League broadcasts, desi
 *   Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
 *   Ability to save teams for more convenient later use.
 *   Automatic match winner detection and series score update.
+*   Fully portable and ready to use for streamers and casters, simply run the .exe file.
+
+## Screenshots
+
+capturas/screenshots.png
 
 ## Streaming Setup
 

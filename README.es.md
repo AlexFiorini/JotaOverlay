@@ -13,6 +13,11 @@ Este proyecto es un sistema de overlay profesional para retransmisiones de Rocke
 *   Panel de control para gestionar nombres de equipos, logos y el marcador de la serie de forma manual. Permite realizar cambios durante el partido.
 *   Posibilidad de guardar equipos para su posterior uso de una forma más cómoda.
 *   Detección automática de ganadores de partidos y actualización del marcador de la serie.
+*   Completamente portable y listo para usar para streamers y casters, simplemente ejecuta el archivo .exe.
+
+## Capturas de pantalla
+
+capturas/screenshots.png
 
 ## Configuración para streaming
 
