@@ -2,18 +2,9 @@
 
 Este proyecto es un sistema de overlay profesional para retransmisiones de Rocket League, diseñado para integrarse con la **nueva API oficial de stats de Rocket League** (Rocket League Stats API) lanzada junto con la actualización del Easy Anti-Cheat (EAC) de Rocket League en abril de 2026.
 
-## Funciones
+Intrucciones en inglés disponibles en: [README.md](README.md)
 
-*   Integración nativa con la nueva Rocket League Stats API.
-*   Overlay automático compatible con programas de retransmisión (OBS, Streamlabs Desktop, etc.) usando fuente de navegador.
-    *   Pantalla ingame compatible con 1v1, 2v2, 3v3 y 4v4.
-    *   Tags con nombres de jugadores, boost y otros stats.
-    *   Pantalla de gol automática con estadísticas del gol (goleador, velocidad y asistente).
-    *   Pantalla final de partido con scoreboards y MVP.
-*   Panel de control para gestionar nombres de equipos, logos y el marcador de la serie de forma manual. Permite realizar cambios durante el partido.
-*   Posibilidad de guardar equipos para su posterior uso de una forma más cómoda.
-*   Detección automática de ganadores de partidos y actualización del marcador de la serie.
-*   Completamente portable y listo para usar para streamers y casters, simplemente ejecuta el archivo .exe.
+**Para descargar la última versión, visita la sección [Releases](https://github.com/jotasonder/JotaOverlay/releases) y descarga el archivo .exe.**
 
 ## Capturas de pantalla
 
@@ -43,6 +34,30 @@ Este proyecto es un sistema de overlay profesional para retransmisiones de Rocke
         ```
         *   Resolución: `1920x1080`
     - [ ] El overlay se mostrará en la pantalla
+
+## Funciones
+
+*   Integración nativa con la nueva Rocket League Stats API.
+*   Overlay automático compatible con programas de retransmisión (OBS, Streamlabs Desktop, etc.) usando fuente de navegador.
+    *   Pantalla ingame compatible con 1v1, 2v2, 3v3 y 4v4.
+    *   Tags con nombres de jugadores, boost y otros stats.
+    *   Pantalla de gol automática con estadísticas del gol (goleador, velocidad y asistente).
+    *   Pantalla final de partido con scoreboards y MVP.
+*   Panel de control para gestionar nombres de equipos, logos y el marcador de la serie de forma manual. Permite realizar cambios durante el partido.
+*   Completamente portable y listo para usar para streamers y casters, simplemente ejecuta el archivo .exe.
+
+## Funciones avanzadas
+
+### Presets de equipos
+Guarda configuraciones de equipos para su uso posterior. Esto te permite cargar rápidamente nombres de equipos, logos y marcadores de serie sin tener que introducirlos manualmente.
+
+### Soporte para logos personalizados
+Reemplaza los logos por defecto con tus propios logos. El overlay soporta formatos PNG, JPG y WebP.
+
+### Detección automática de ganadores
+Después de cada partido, el overlay detecta al ganador automáticamente y actualiza el marcador de la serie.
+
+---
 
 ## 🚀 Arquitectura del Sistema
 

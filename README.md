@@ -1,19 +1,10 @@
-# JotaOverlay
+# JotaOverlay — Rocket League Overlay
 
 This project is a professional overlay system for Rocket League broadcasts, designed to integrate with the **new official Rocket League Stats API** (Rocket League Stats API) released with the Rocket League Easy Anti-Cheat (EAC) update in April 2026.
 
-## Features
+Spanish instructions available in: [README.es.md](README.es.md)
 
-*   Native integration with the new Rocket League Stats API.
-*   Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
-    *   Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
-    *   Tags with player names, boost, and other stats.
-    *   Automatic goal screen with goal statistics (scorer, speed, and assist).
-    *   Post-match screen with scoreboards and MVP.
-*   Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
-*   Ability to save teams for more convenient later use.
-*   Automatic match winner detection and series score update.
-*   Fully portable and ready to use for streamers and casters, simply run the .exe file.
+**To download the latest version, visit the [Releases](https://github.com/jotasonder/JotaOverlay/releases) section and download the .exe file.**
 
 ## Screenshots
 
@@ -43,6 +34,30 @@ This project is a professional overlay system for Rocket League broadcasts, desi
         ```
         *   Resolution: `1920x1080`
     - [ ] The overlay will be displayed on the screen.
+
+## Features
+
+*   Native integration with the new Rocket League Stats API.
+*   Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
+    *   Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
+    *   Tags with player names, boost, and other stats.
+    *   Automatic goal screen with goal statistics (scorer, speed, and assist).
+    *   Post-match screen with scoreboards and MVP.
+*   Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
+*   Fully portable and ready to use for streamers and casters, simply run the .exe file.
+
+## Advanced Features
+
+### Team Presets
+You can save team configurations for future use. This allows you to quickly load team names, logos, and series scores without having to re-enter them manually.
+
+### Custom Logo Support
+Replace the default team logos with your own custom images. The overlay supports PNG, JPG, and WebP formats.
+
+### Winner Detection
+After each match, the overlay automatically detects the winner using the Rocket League Stats API and updates the series score.
+
+---
 
 ## 🚀 System Architecture
 
