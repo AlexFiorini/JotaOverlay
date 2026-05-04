@@ -218,7 +218,17 @@ el('input-logo-orange').addEventListener('change', e => handleLogoInput('orange'
 ['blue', 'orange'].forEach(side => {
   el(`select-saved-${side}`).addEventListener('change', function() {
     const name = this.value;
-    if (!name) return;
+    if (!name) {
+      // Reset to manual/default
+      if (side === 'blue') {
+        pendingLogoBlue = null;
+        el('preview-logo-blue').src = '../assets/rl.png';
+      } else {
+        pendingLogoOrange = null;
+        el('preview-logo-orange').src = '../assets/rl.png';
+      }
+      return;
+    }
     const teams = currentState.savedTeams || [];
     const t = teams.find(t => t.name === name);
     if (!t) return;
@@ -314,6 +324,16 @@ el('btn-reset-all').addEventListener('click', async () => {
   if (ok) {
     send('reset_all');
   }
+});
+
+el('btn-default-logo-blue').addEventListener('click', () => {
+  pendingLogoBlue = null;
+  el('preview-logo-blue').src = '../assets/rl.png';
+});
+
+el('btn-default-logo-orange').addEventListener('click', () => {
+  pendingLogoOrange = null;
+  el('preview-logo-orange').src = '../assets/rl.png';
 });
 
 // ── Add team logo ─────────────────────────────────────────────────────────

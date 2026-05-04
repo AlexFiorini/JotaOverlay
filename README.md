@@ -4,15 +4,15 @@ This project is a professional overlay system for Rocket League broadcasts, desi
 
 ## Features
 
-- [x] Native integration with the new Rocket League Stats API.
-- [x] Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
-    - [x] Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
-    - [x] Tags with player names, boost, and other stats.
-    - [x] Automatic goal screen with goal statistics (scorer, speed, and assist).
-    - [x] Post-match screen with scoreboards and MVP.
-- [x] Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
-- [x] Ability to save teams for more convenient later use.
-- [x] Automatic match winner detection and series score update.
+*   Native integration with the new Rocket League Stats API.
+*   Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
+    *   Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
+    *   Tags with player names, boost, and other stats.
+    *   Automatic goal screen with goal statistics (scorer, speed, and assist).
+    *   Post-match screen with scoreboards and MVP.
+*   Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
+*   Ability to save teams for more convenient later use.
+*   Automatic match winner detection and series score update.
 
 ## Streaming Setup
 
@@ -24,8 +24,12 @@ This project is a professional overlay system for Rocket League broadcasts, desi
     - [ ] Start Rocket League.
 2.  **Configure the overlay in your streaming software:**
     - [ ] Open JotaOverlay.exe.
-    - [ ] In your streaming software, create a new browser source above your game and set the following URL:
-        - `http://localhost:3000` (Resolution: `1920x1080`).
+    - [ ] In your streaming software, create a new browser source above your game:
+        *   URL:
+        ```javascript
+        http://localhost:3000
+        ```
+        *   Resolution: `1920x1080`
     - [ ] The overlay will be displayed on the screen.
 
 ## 🚀 System Architecture
@@ -49,7 +53,7 @@ The program works as a "bridge" between the game data and the visual interface:
 *   **`package.json`**: Defines dependencies (`express`, `ws`, `electron`) and build commands.
 
 ### 🎨 Interfaces
-*   **`overlay/`**: The visual part imported into OBS (via Browser Source).
+*   **`overlay/`**: The visual part imported into streaming software (via Browser Source).
     *   `index.html`: Scoreboard and HUD structure.
     *   `app.js`: Logic that receives data from the WebSocket (port 3001) and updates the HTML.
 *   **`control-panel/`**: Tool to manage team names, logos, and series scores manually.

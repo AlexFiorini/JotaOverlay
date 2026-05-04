@@ -4,15 +4,15 @@ Este proyecto es un sistema de overlay profesional para retransmisiones de Rocke
 
 ## Funciones
 
-- [ ] Integración nativa con la nueva Rocket League Stats API.
-- [ ] Overlay automático compatible con programas de retransmisión (OBS, Streamlabs Desktop, etc.) usando fuente de navegador.
-    - [ ] Pantalla ingame compatible con 1v1, 2v2, 3v3 y 4v4.
-    - [ ] Tags con nombres de jugadores, boost y otros stats.
-    - [ ] Pantalla de gol automática con estadísticas del gol (goleador, velocidad y asistente).
-    - [ ] Pantalla final de partido con scoreboards y MVP.
-- [ ] Panel de control para gestionar nombres de equipos, logos y el marcador de la serie de forma manual. Permite realizar cambios durante el partido.
-- [ ] Posibilidad de guardar equipos para su posterior uso de una forma más cómoda.
-- [ ] Detección automática de ganadores de partidos y actualización del marcador de la serie.
+*   Integración nativa con la nueva Rocket League Stats API.
+*   Overlay automático compatible con programas de retransmisión (OBS, Streamlabs Desktop, etc.) usando fuente de navegador.
+    *   Pantalla ingame compatible con 1v1, 2v2, 3v3 y 4v4.
+    *   Tags con nombres de jugadores, boost y otros stats.
+    *   Pantalla de gol automática con estadísticas del gol (goleador, velocidad y asistente).
+    *   Pantalla final de partido con scoreboards y MVP.
+*   Panel de control para gestionar nombres de equipos, logos y el marcador de la serie de forma manual. Permite realizar cambios durante el partido.
+*   Posibilidad de guardar equipos para su posterior uso de una forma más cómoda.
+*   Detección automática de ganadores de partidos y actualización del marcador de la serie.
 
 ## Configuración para streaming
 
@@ -24,8 +24,12 @@ Este proyecto es un sistema de overlay profesional para retransmisiones de Rocke
     - [ ] Inicia Rocket League
 2.  **Configurar el overlay en tu software de streaming:**
     - [ ] Abre JotaOverlay.exe
-    - [ ] En tu software de streaming, crea una nueva fuente de navegador por encima de tu juego y configura la siguiente URL:
-        - `http://localhost:3000` (resolución: `1920x1080`)
+    - [ ] En tu software de streaming, crea una nueva fuente de navegador por encima de tu juego:
+        *   URL:
+        ```javascript
+        http://localhost:3000
+        ```
+        *   Resolución: `1920x1080`
     - [ ] El overlay se mostrará en la pantalla
 
 ## 🚀 Arquitectura del Sistema
@@ -49,7 +53,7 @@ El programa funciona como un "puente" (bridge) entre los datos del juego y la in
 *   **`package.json`**: Define las dependencias (`express`, `ws`, `electron`) y los comandos de construcción.
 
 ### 🎨 Interfaces
-*   **`overlay/`**: La parte visual que se importa en OBS (vía Fuente de Navegador).
+*   **`overlay/`**: La parte visual que se importa en el software de streaming (vía Fuente de Navegador).
     *   `index.html`: Estructura del marcador y HUD.
     *   `app.js`: Lógica que recibe los datos del WebSocket (puerto 3001) y actualiza el HTML.
 *   **`control-panel/`**: Herramienta para gestionar nombres de equipos, logos y el marcador de la serie de forma manual.
