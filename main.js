@@ -3,6 +3,7 @@ const path = require('path');
 const server = require('./server');
 
 nativeTheme.themeSource = 'dark';
+app.disableHardwareAcceleration();
 
 let controlPanel;
 
@@ -21,6 +22,11 @@ function createControlPanel() {
   });
   controlPanel.loadFile(path.join(__dirname, 'control-panel', 'index.html'));
   controlPanel.setMenuBarVisibility(false);
+
+  // Focus fix for Windows
+  controlPanel.on('focus', () => {
+    controlPanel.webContents.focus();
+  });
 
   // Open external links in the default browser
   controlPanel.webContents.setWindowOpenHandler(({ url }) => {

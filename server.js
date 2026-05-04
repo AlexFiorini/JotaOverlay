@@ -12,6 +12,7 @@ const RL_RECONNECT_INTERVAL = 3000;
 let appDir = __dirname;
 let dataDir;
 let teamsFile;
+let stateFile;
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let state = {
@@ -48,6 +49,35 @@ function saveTeams() {
     fs.mkdirSync(dataDir, { recursive: true });
     fs.writeFileSync(teamsFile, JSON.stringify(savedTeams, null, 2));
   } catch (e) { console.error('Error saving teams:', e); }
+}
+
+function loadState() {
+  try {
+    if (fs.existsSync(stateFile)) {
+      const saved = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+      if (saved.eventName) state.eventName = saved.eventName;
+      if (saved.bestOf) state.bestOf = saved.bestOf;
+      if (saved.teams) state.teams = saved.teams;
+      if (saved.series) state.series = saved.series;
+      if (saved.game && typeof saved.game.number === 'number') {
+        state.game.number = saved.game.number;
+      }
+    }
+  } catch (e) { console.error('Error loading state:', e); }
+}
+
+function saveAppState() {
+  try {
+    const toSave = {
+      eventName: state.eventName,
+      bestOf: state.bestOf,
+      teams: state.teams,
+      series: state.series,
+      game: { number: state.game.number }
+    };
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(stateFile, JSON.stringify(toSave, null, 2));
+  } catch (e) { console.error('Error saving state:', e); }
 }
 
 function broadcast(clients, msg) {
@@ -323,6 +353,7 @@ function handleMatchEnded(data) {
     state.series.orange++;
   }
   
+  saveAppState();
   broadcastFullState();
 
   setTimeout(() => {
@@ -349,6 +380,7 @@ function handleMatchCreated(data) {
   state.players    = [];
   state.playerCache = {};
   state.view       = 'hud';
+  saveAppState();
   broadcastFullState();
   broadcast(bridgeClients, { type: 'game_reset', data: { gameNumber: state.game.number } });
 }
@@ -380,6 +412,7 @@ function handleControlMessage(msg, ws) {
   switch (msg.type) {
     case 'set_event_name':
       state.eventName = msg.data.name || '';
+      saveAppState();
       broadcastFullState();
       break;
 
@@ -389,6 +422,7 @@ function handleControlMessage(msg, ws) {
           name: msg.data.name || '',
           logo: msg.data.logo || null
         };
+        saveAppState();
         broadcastFullState();
       }
       break;
@@ -396,6 +430,7 @@ function handleControlMessage(msg, ws) {
     case 'adjust_series':
       if (msg.data.side === 'blue' || msg.data.side === 'orange') {
         state.series[msg.data.side] = Math.max(0, state.series[msg.data.side] + (msg.data.delta || 0));
+        saveAppState();
         broadcastFullState();
       }
       break;
@@ -403,21 +438,25 @@ function handleControlMessage(msg, ws) {
     case 'set_series':
       if (typeof msg.data.blue === 'number') state.series.blue   = Math.max(0, msg.data.blue);
       if (typeof msg.data.orange === 'number') state.series.orange = Math.max(0, msg.data.orange);
+      saveAppState();
       broadcastFullState();
       break;
 
     case 'set_best_of':
       state.bestOf = msg.data.value || 5;
+      saveAppState();
       broadcastFullState();
       break;
 
     case 'adjust_game_number':
       state.game.number = Math.max(0, state.game.number + (msg.data.delta || 0));
+      saveAppState();
       broadcastFullState();
       break;
 
     case 'set_game_number':
       state.game.number = Math.max(0, msg.data.value ?? 0);
+      saveAppState();
       broadcastFullState();
       break;
 
@@ -451,6 +490,40 @@ function handleControlMessage(msg, ws) {
     case 'request_state':
       ws.send(JSON.stringify(getFullState()));
       break;
+    
+    case 'swap_teams': {
+      // Swap names/logos
+      const tempTeams = { ...state.teams.blue };
+      state.teams.blue = { ...state.teams.orange };
+      state.teams.orange = tempTeams;
+      
+      // Swap series scores
+      const tempSeries = state.series.blue;
+      state.series.blue = state.series.orange;
+      state.series.orange = tempSeries;
+
+      saveAppState();
+      broadcastFullState();
+      break;
+    }
+
+    case 'reset_all': {
+      state.eventName = 'ROCKET LEAGUE TOURNAMENT';
+      state.bestOf = 5;
+      state.teams = {
+        blue:   { name: 'BLUE TEAM',   logo: null },
+        orange: { name: 'ORANGE TEAM', logo: null }
+      };
+      state.series = { blue: 0, orange: 0 };
+      state.game = { blueScore: 0, orangeScore: 0, time: 300, isOT: false, number: 0 };
+      state.view = 'hud';
+      state.playerCache = {};
+      state.players = [];
+      
+      saveAppState();
+      broadcastFullState();
+      break;
+    }
 
     default:
       break;
@@ -488,9 +561,11 @@ module.exports.start = function(baseDir) {
   const userData = electronApp.getPath('userData');
   dataDir   = path.join(userData, 'data');
   teamsFile = path.join(dataDir, 'teams.json');
+  stateFile = path.join(dataDir, 'state.json');
 
   fs.mkdirSync(dataDir, { recursive: true });
   loadTeams();
+  loadState();
 
   startHttpServer(appDir);
   startBridgeServer();

@@ -26,6 +26,30 @@ function fileToBase64(file) {
   });
 }
 
+// ── Custom Modal ──────────────────────────────────────────────────────────
+let modalResolve = null;
+
+function customConfirm(title, message, confirmText = 'Confirm') {
+  el('modal-title').textContent = title;
+  el('modal-message').textContent = message;
+  el('modal-btn-confirm').textContent = confirmText;
+  el('modal-container').classList.add('active');
+  
+  return new Promise((resolve) => {
+    modalResolve = resolve;
+  });
+}
+
+function closeModal(result) {
+  el('modal-container').classList.remove('active');
+  if (modalResolve) modalResolve(result);
+  modalResolve = null;
+}
+
+el('modal-btn-confirm').addEventListener('click', () => closeModal(true));
+el('modal-btn-cancel').addEventListener('click', () => closeModal(false));
+el('modal-btn-close').addEventListener('click', () => closeModal(false));
+
 // ── Tab switching ─────────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -162,8 +186,9 @@ function startEditTeam(t) {
   el('btn-save-team').textContent = '✏️ Update Team';
 }
 
-function deleteTeam(name) {
-  if (confirm(`Delete the team "${name}"?`)) {
+async function deleteTeam(name) {
+  const ok = await customConfirm('Delete Team', `Are you sure you want to delete the team "${name}"?`, 'Delete');
+  if (ok) {
     send('delete_team', { name });
   }
 }
@@ -205,20 +230,38 @@ el('input-logo-orange').addEventListener('change', e => handleLogoInput('orange'
       pendingLogoOrange = t.logo;
       el('preview-logo-orange').src = t.logo || '../assets/rl.png';
     }
+    // Auto-apply
+    applyTeam(side);
   });
 });
 
-// ── Event: Apply team buttons ─────────────────────────────────────────────
-el('btn-apply-blue').addEventListener('click', () => {
-  const name = el('input-name-blue').value.trim().toUpperCase();
+function applyTeam(side) {
+  const name = el(`input-name-${side}`).value.trim().toUpperCase();
   if (!name) return;
-  send('set_team', { side: 'blue', name, logo: pendingLogoBlue || null });
+  const logo = side === 'blue' ? pendingLogoBlue : pendingLogoOrange;
+  send('set_team', { side, name, logo: logo || null });
+}
+
+el('btn-apply-blue').addEventListener('click', () => applyTeam('blue'));
+el('btn-apply-orange').addEventListener('click', () => applyTeam('orange'));
+
+['blue', 'orange'].forEach(side => {
+  el(`input-name-${side}`).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') applyTeam(side);
+  });
 });
 
-el('btn-apply-orange').addEventListener('click', () => {
+// ── Event: Quick save team buttons ────────────────────────────────────────
+el('btn-quick-save-blue').addEventListener('click', () => {
+  const name = el('input-name-blue').value.trim().toUpperCase();
+  if (!name) { alert('Enter team name.'); return; }
+  send('save_team', { name, logo: pendingLogoBlue || null });
+});
+
+el('btn-quick-save-orange').addEventListener('click', () => {
   const name = el('input-name-orange').value.trim().toUpperCase();
-  if (!name) return;
-  send('set_team', { side: 'orange', name, logo: pendingLogoOrange || null });
+  if (!name) { alert('Enter team name.'); return; }
+  send('save_team', { name, logo: pendingLogoOrange || null });
 });
 
 // ── Event: Series buttons ─────────────────────────────────────────────────
@@ -261,6 +304,17 @@ document.querySelectorAll('input[name="bestof"]').forEach(r => {
 // ── Event: View controls ──────────────────────────────────────────────────
 el('btn-force-scoreboard').addEventListener('click', () => send('force_scoreboard'));
 el('btn-force-hud').addEventListener('click',        () => send('force_hud'));
+
+el('btn-swap-teams').addEventListener('click', () => {
+  send('swap_teams');
+});
+
+el('btn-reset-all').addEventListener('click', async () => {
+  const ok = await customConfirm('Reset Data', 'Are you sure you want to reset ALL match data? This cannot be undone.', 'Reset All');
+  if (ok) {
+    send('reset_all');
+  }
+});
 
 // ── Add team logo ─────────────────────────────────────────────────────────
 el('add-team-logo').addEventListener('change', async (e) => {

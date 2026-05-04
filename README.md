@@ -1,73 +1,99 @@
-# JotaOverlay — Rocket League Tournament Overlay
+# JotaOverlay
 
-Este proyecto es un sistema de overlay profesional para retransmisiones de Rocket League, diseñado para integrarse con la **API oficial de estadísticas de Rocket League** (Psyonix Stats API).
+This project is a professional overlay system for Rocket League broadcasts, designed to integrate with the **new official Rocket League Stats API** (Rocket League Stats API) released with the Rocket League Easy Anti-Cheat (EAC) update in April 2026.
 
-## 🚀 Arquitectura del Sistema
+## Features
 
-El programa funciona como un "puente" (bridge) entre los datos del juego y la interfaz visual:
+- [x] Native integration with the new Rocket League Stats API.
+- [x] Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
+    - [x] Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
+    - [x] Tags with player names, boost, and other stats.
+    - [x] Automatic goal screen with goal statistics (scorer, speed, and assist).
+    - [x] Post-match screen with scoreboards and MVP.
+- [x] Control panel to manage team names, logos, and series scores manually. Allows changes during the match.
+- [x] Ability to save teams for more convenient later use.
+- [x] Automatic match winner detection and series score update.
 
-1.  **Capa de Datos (Rocket League):** El juego emite datos en tiempo real a través de su API interna de estadísticas.
-2.  **Capa de Servidor (Backend):** Un servidor Node.js (`server.js`) actúa como cliente TCP para recibir, procesar y distribuir estos datos.
-3.  **Capa Visual (Frontend):** Tanto el Overlay como el Panel de Control son aplicaciones web que se actualizan mediante WebSockets.
+## Streaming Setup
+
+1.  **Activate the official API:** 
+    - [ ] Close Rocket League (if open).
+    - [ ] Go to the file `<Rocket League installation directory>/TAGame/Config/DefaultStatsAPI.ini`.
+    - [ ] Change the `PacketSendRate` value to `30` (or higher).
+    - [ ] Save the file.
+    - [ ] Start Rocket League.
+2.  **Configure the overlay in your streaming software:**
+    - [ ] Open JotaOverlay.exe.
+    - [ ] In your streaming software, create a new browser source above your game and set the following URL:
+        - `http://localhost:3000` (Resolution: `1920x1080`).
+    - [ ] The overlay will be displayed on the screen.
+
+## 🚀 System Architecture
+
+The program works as a "bridge" between the game data and the visual interface:
+
+1.  **Data Layer (Rocket League):** The game emits real-time data through its internal stats API.
+2.  **Server Layer (Backend):** A Node.js server (`server.js`) acts as a TCP client to receive, process, and distribute this data.
+3.  **Visual Layer (Frontend):** Both the Overlay and the Control Panel are web applications that update via WebSockets.
 
 ---
 
-## 📂 Guía de Archivos
+## 📂 File Guide
 
-### 🧠 Núcleo del Sistema
-*   **`main.js`**: Punto de entrada de Electron. Configura la ventana del Panel de Control y arranca el servidor backend.
-*   **`server.js`**: El componente más crítico. Contiene:
-    *   **Cliente TCP**: Se conecta al puerto 49123 del juego.
-    *   **Lógica de Estado**: Mantiene la puntuación, tiempo, jugadores activos y eventos de gol.
-    *   **Servidor WebSocket**: Re-emite los datos procesados al overlay (puerto 3001).
-*   **`package.json`**: Define las dependencias (`express`, `ws`, `electron`) y los comandos de construcción.
+### 🧠 System Core
+*   **`main.js`**: Electron entry point. Configures the Control Panel window and starts the backend server.
+*   **`server.js`**: The most critical component. It contains:
+    *   **TCP Client**: Connects to the game's port 49123.
+    *   **State Logic**: Maintains scores, time, active players, and goal events.
+    *   **WebSocket Server**: Re-emits processed data to the overlay (port 3001).
+*   **`package.json`**: Defines dependencies (`express`, `ws`, `electron`) and build commands.
 
 ### 🎨 Interfaces
-*   **`overlay/`**: La parte visual que se importa en OBS (vía Fuente de Navegador).
-    *   `index.html`: Estructura del marcador y HUD.
-    *   `app.js`: Lógica que recibe los datos del WebSocket (puerto 3001) y actualiza el HTML.
-*   **`control-panel/`**: Herramienta para gestionar nombres de equipos, logos y el marcador de la serie de forma manual.
+*   **`overlay/`**: The visual part imported into OBS (via Browser Source).
+    *   `index.html`: Scoreboard and HUD structure.
+    *   `app.js`: Logic that receives data from the WebSocket (port 3001) and updates the HTML.
+*   **`control-panel/`**: Tool to manage team names, logos, and series scores manually.
 
-### 📦 Recursos y Persistencia
-*   **`assets/`**: Imágenes, logos por defecto y fuentes tipográficas.
-*   **`data/`**: Almacena de forma persistente los equipos configurados (`teams.json`) y sus logos.
+### 📦 Resources and Persistence
+*   **`assets/`**: Images, default logos, and fonts.
+*   **`data/`**: Persistently stores configured teams (`teams.json`), their logos, and the application state (`state.json`).
 
 ---
 
-## 🔌 Integración con Rocket League Stats API
+## 🔌 Integration with Rocket League Stats API
 
-Este overlay está diseñado específicamente para trabajar con la **Rocket League Stats API** oficial de Psyonix.
+This overlay is specifically designed to work with the official **Rocket League Stats API** from Psyonix.
 
-### 1. Conexión Técnica
-El servidor se conecta mediante un **Socket TCP** a la dirección local en el puerto **49123**.
+### 1. Technical Connection
+The server connects via a **TCP Socket** to the local address on port **49123**.
 
 ```javascript
-// Conexión en server.js
+// Connection in server.js
 rlSocket.connect(49123, '127.0.0.1', () => {
   console.log('[RL] Connected to Stats API (TCP)');
 });
 ```
 
-### 2. Eventos Procesados
-El código está preparado para interpretar los paquetes JSON oficiales de la API:
-*   `UpdateState`: Actualización general (marcador, tiempo, boost de jugadores).
-*   `GoalScored`: Información sobre el autor del gol y velocidad.
-*   `ClockUpdatedSeconds`: Sincronización precisa del cronómetro.
-*   `MatchCreated` / `MatchEnded`: Reinicio de estados y gestión de series.
+### 2. Processed Events
+The code is prepared to interpret the official JSON packets from the API:
+*   **`UpdateState`**: General update (scoreboard, time, player boost).
+*   **`GoalScored`**: Information about the goal scorer and speed.
+*   **`ClockUpdatedSeconds`**: Precise timer synchronization.
+*   **`MatchCreated` / `MatchEnded`**: State reset and series management.
 
-### 🛠️ ¿Por qué no está recibiendo datos?
-Si el overlay no se actualiza, revisa lo siguiente:
-*   **Activar la API:** Para que Rocket League emita estos datos, debes modificar el valor de `PacketSendRate` a al menos `30` en el archivo `<Install Dir>/TAGame/Config/DefaultStatsAPI.ini`.
-*   **Uso de la API Oficial:** Esta versión utiliza la API nativa de Rocket League. **No** requiere BakkesMod ni el plugin SOS para funcionar.
-*   **Puerto 49123:** Es el puerto estándar de la Stats API. Asegúrate de que no haya un firewall bloqueando el tráfico local en este puerto.
-*   **Dirección Local:** El programa busca el juego en `127.0.0.1`. El juego y este programa deben ejecutarse en el mismo PC.
+### 🛠️ Why is it not receiving data?
+If the overlay is not updating, check the following:
+*   **Activate the API:** For Rocket League to emit this data, you must change the `PacketSendRate` value to at least `30` in the `<Install Dir>/TAGame/Config/DefaultStatsAPI.ini` file.
+*   **Official API Usage:** This version uses the native Rocket League API. It **does not** require BakkesMod or the SOS plugin to work.
+*   **Port 49123:** This is the standard Stats API port. Make sure no firewall is blocking local traffic on this port.
+*   **Local Address:** The program looks for the game at `127.0.0.1`. The game and this program must run on the same PC.
 
 ---
 
-## 📦 Construcción del Proyecto (Build)
+## 📦 Project Build
 
-Para generar el ejecutable portátil (`.exe`) para Windows:
+To generate the portable executable (`.exe`) for Windows:
 
-1.  Instala las dependencias: `npm install`
-2.  Genera la build: `npm run build`
-3.  El archivo resultante aparecerá en la carpeta **`dist/`** como `JotaOverlay.exe`.
+1.  Install dependencies: `npm install`
+2.  Generate the build: `npm run build`
+3.  The resulting file will appear in the **`dist/`** folder as `JotaOverlay.exe`.

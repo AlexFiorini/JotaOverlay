@@ -17,6 +17,7 @@
   <span class="overlay-link">
     Overlay: <a href="http://localhost:3000" target="_blank">localhost:3000</a>
   </span>
+  <button class="btn btn-danger btn-sm" id="btn-reset-all" style="margin-left: auto;">⚠️ Reset All</button>
 </div>
 
 <!-- Tabs -->
@@ -40,7 +41,10 @@
 
   <!-- Teams -->
   <section class="section">
-    <h3 class="section-title">🛡️ Teams</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 class="section-title" style="margin-bottom: 0;">🛡️ Teams</h3>
+      <button class="btn btn-ghost btn-sm" id="btn-swap-teams">🔄 Swap Sides</button>
+    </div>
     <div class="teams-grid">
 
       <!-- Blue team -->
@@ -68,7 +72,10 @@
             </button>
           </div>
         </div>
-        <button class="btn btn-blue btn-full" id="btn-apply-blue">Apply Blue Team</button>
+        <div class="team-card-actions">
+          <button class="btn btn-blue btn-apply" id="btn-apply-blue">Apply Blue Team</button>
+          <button class="btn btn-save" id="btn-quick-save-blue" title="Save to Library">💾</button>
+        </div>
       </div>
 
       <!-- Orange team -->
@@ -96,7 +103,10 @@
             </button>
           </div>
         </div>
-        <button class="btn btn-orange btn-full" id="btn-apply-orange">Apply Orange Team</button>
+        <div class="team-card-actions">
+          <button class="btn btn-orange btn-apply" id="btn-apply-orange">Apply Orange Team</button>
+          <button class="btn btn-save" id="btn-quick-save-orange" title="Save to Library">💾</button>
+        </div>
       </div>
 
     </div>
@@ -206,6 +216,23 @@
   </section>
 
 </div><!-- /tab-equipos-content -->
+  
+<!-- Custom Modal -->
+<div id="modal-container" class="modal-container">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="modal-title">Attention</span>
+      <button class="modal-close" id="modal-btn-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-message">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
+      <button class="btn btn-danger" id="modal-btn-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>

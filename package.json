@@ -1,7 +1,8 @@
 {
   "name": "jota-overlay",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Rocket League Tournament Overlay by jotasonder",
+  "author": "jotasonder",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -18,13 +19,14 @@
   "build": {
     "appId": "es.jotasonder.rl-overlay",
     "productName": "JotaOverlay",
-    "asar": false,
+    "asar": true,
+    "copyright": "JotaOverlay",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "target": [{ "target": "portable", "arch": ["x64"] }],
-      "artifactName": "JotaOverlay.exe"
+      "icon": "assets/icon.png",
+      "target": ["portable"]
     },
     "files": [
       "main.js",

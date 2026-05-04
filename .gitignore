@@ -1,7 +1,7 @@
 # Dependency directories
 node_modules/
 
-# Build outputs
+# Beta Build outputs
 dist/
 
 # OS metadata
@@ -27,3 +27,6 @@ data/logos/*
 
 # Design templates (PSD/large images)
 templates/
+
+# API Tests
+tests/
