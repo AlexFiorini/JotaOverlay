@@ -96,6 +96,7 @@ function applyState(data) {
   // Saved teams dropdowns + list
   populateSavedTeamsDropdowns(data.savedTeams || []);
   renderTeamsList(data.savedTeams || []);
+  renderFacecamsList(data.savedFacecams || []);
 
   // RL status
   el('rl-status').textContent = data.rlConnected
@@ -485,6 +486,119 @@ el('input-banner-image').addEventListener('change', async (e) => {
   // clear input so we can select same file again if needed
   e.target.value = '';
 });
+
+// ── Save facecam
+el('btn-save-facecam').addEventListener('click', () => {
+  const name = el('add-facecam-player-name').value.trim();
+  const platform = el('add-facecam-platform').value;
+  const platformId = el('add-facecam-player-id').value.trim();
+  const link = el('add-facecam-link').value.trim();
+  if (!name) { alert('Enter player name.'); return; }
+  if (!platformId) { alert('Enter Platform ID.'); return; }
+  send('save_facecam', { name, platform, platformId, link });
+  resetAddFacecamForm();
+});
+
+el('btn-clear-facecam-form').addEventListener('click', resetAddFacecamForm);
+
+function resetAddFacecamForm() {
+  el('add-facecam-player-name').value = '';
+  el('add-facecam-platform').value = 'steam';
+  el('add-facecam-player-id').value = '';
+  el('add-facecam-link').value = '';
+}
+
+function resetAddTeamForm() {
+  editingTeamName = null;
+  el('add-team-name').value = '';
+  el('add-team-logo').value = '';
+  pendingAddLogo = null;
+  el('add-team-logo-preview').src = '../assets/rl.png';
+  el('btn-save-team').textContent = '💾 Save Team';
+}
+
+// ── Facecam list ───────────────────────────────────────────────
+function renderFacecamsList(facecams) {
+  const list     = el('facecams-list');
+  const emptyMsg = el('facecams-empty');
+  if (!list) return;
+
+  // Remove existing items (keep empty-msg)
+  list.querySelectorAll('.facecam-list-item').forEach(i => i.remove());
+
+  emptyMsg.style.display = facecams.length === 0 ? '' : 'none';
+
+  facecams.forEach(fc => {
+    const item = document.createElement('div');
+    item.className = 'facecam-list-item';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'facecam-top-row';
+
+    const name = document.createElement('div');
+    name.className = 'facecam-list-name';
+    name.textContent = fc.name;
+
+    const actions = document.createElement('div');
+    actions.className = 'facecam-list-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-secondary';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => startEditFacecam(fc));
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', () => deleteFacecam(fc.name));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    topRow.appendChild(name);
+    topRow.appendChild(actions);
+
+    const middleRow = document.createElement('div');
+    middleRow.className = 'facecam-middle-row';
+
+    const platform = document.createElement('img');
+    platform.className = 'facecam-platform-logo';
+    platform.src = '../assets/platforms/' + fc.platform + '.png';
+
+    const platformId = document.createElement('div');
+    platformId.className = 'facecam-list-steam-id';
+    platformId.textContent = fc.platformId;
+
+    middleRow.appendChild(platform);
+    middleRow.appendChild(platformId);
+
+    const facecamLink = document.createElement('div');
+    facecamLink.className = 'facecam-list-link';
+    facecamLink.textContent = fc.link;
+
+    item.appendChild(topRow);
+    item.appendChild(middleRow);
+    item.appendChild(facecamLink);
+    list.appendChild(item);
+  });
+}
+
+function startEditFacecam(fc) {
+  document.querySelector('[data-tab="facecams"]').click();
+  editingFacecamName = fc.name;
+  el('add-facecam-player-name').value = fc.name;
+  el('add-facecam-platform').value = fc.platform;
+  el('add-facecam-player-id').value = fc.platformId;
+  el('add-facecam-link').value = fc.link;
+  el('btn-save-facecam').textContent = '✏️ Update Facecam';
+}
+
+async function deleteFacecam(name) {
+  const ok = await customConfirm('Delete Facecam', `Are you sure you want to delete the facecam "${name}"?`, 'Delete');
+  if (ok) {
+    send('delete_facecam', { name });
+  }
+}
 
 // ── RL status ─────────────────────────────────────────────────────────────
 // (Updated via full_state)

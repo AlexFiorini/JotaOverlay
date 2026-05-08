@@ -13,6 +13,7 @@ let appDir = __dirname;
 let dataDir;
 let teamsFile;
 let stateFile;
+let facecamsFile;
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let state = {
@@ -36,6 +37,7 @@ let state = {
 };
 
 let savedTeams = [];   // [{ name, logo }]
+let savedFacecams = []; // [{ name, platformId, link }]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function loadTeams() {
@@ -51,6 +53,21 @@ function saveTeams() {
     fs.mkdirSync(dataDir, { recursive: true });
     fs.writeFileSync(teamsFile, JSON.stringify(savedTeams, null, 2));
   } catch (e) { console.error('Error saving teams:', e); }
+}
+
+function loadFacecams() {
+  try {
+    if (fs.existsSync(facecamsFile)) {
+      savedFacecams = JSON.parse(fs.readFileSync(facecamsFile, 'utf8'));
+    }
+  } catch (e) { savedFacecams = []; }
+}
+
+function saveFacecams() {
+  try {
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(facecamsFile, JSON.stringify(savedFacecams, null, 2));
+  } catch (e) { console.error('Error saving facecams:', e); }
 }
 
 function loadState() {
@@ -106,6 +123,7 @@ function getFullState() {
     data: {
       ...state,
       savedTeams,
+      savedFacecams,
       formattedTime: formatTime(state.game.time)
     }
   };
@@ -228,7 +246,8 @@ function handleClock(data) {
     data: {
       game: { ...state.game, formattedTime: formatTime(state.game.time) },
       players: state.players,
-      spectatedPlayer: state.spectatedPlayer
+      spectatedPlayer: state.spectatedPlayer,
+      facecams: savedFacecams
     }
   });
 }
@@ -265,6 +284,7 @@ function handleUpdateState(data) {
   // Players — normalise field names
   const normalised = players.map(p => ({
     name:    p.Name    || p.name    || '?',
+    primaryid: p.PrimaryId ?? p.primaryId ?? null,
     team:    p.TeamNum ?? p.teamNum ?? 0,
     score:   p.Score   ?? p.score   ?? 0,
     goals:   p.Goals   ?? p.goals   ?? 0,
@@ -319,7 +339,8 @@ function handleUpdateState(data) {
     data: {
       game: { ...state.game, formattedTime: formatTime(state.game.time) },
       players: normalised,
-      spectatedPlayer: state.spectatedPlayer
+      spectatedPlayer: state.spectatedPlayer,
+      facecams: savedFacecams
     }
   });
 }
@@ -528,6 +549,23 @@ function handleControlMessage(msg, ws) {
       break;
     }
 
+    case 'save_facecam': {
+      const { name, platform, platformId, link } = msg.data;
+      const idx = savedFacecams.findIndex(fc => fc.name === name);
+      if (idx >= 0) savedFacecams[idx] = { name, platform, platformId, link };
+      else savedFacecams.push({ name, platform, platformId, link });
+      saveFacecams();
+      broadcastFullState();
+      break;
+    }
+
+    case 'delete_facecam': {
+      savedFacecams = savedFacecams.filter(fc => fc.name !== msg.data.name);
+      saveFacecams();
+      broadcastFullState();
+      break;
+    }
+
     case 'request_state':
       ws.send(JSON.stringify(getFullState()));
       break;
@@ -605,10 +643,12 @@ module.exports.start = function(baseDir) {
   dataDir   = path.join(userData, 'data');
   teamsFile = path.join(dataDir, 'teams.json');
   stateFile = path.join(dataDir, 'state.json');
+  facecamsFile = path.join(dataDir, 'facecams.json');
 
   fs.mkdirSync(dataDir, { recursive: true });
   loadTeams();
   loadState();
+  loadFacecams();
 
   startHttpServer(appDir);
   startBridgeServer();

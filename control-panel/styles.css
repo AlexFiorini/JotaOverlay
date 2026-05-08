@@ -334,7 +334,7 @@ html, body {
 .add-team-fields { flex: 1; }
 .form-actions { display: flex; gap: 8px; margin-top: 4px; }
 
-.teams-list {
+.teams-list .facecams-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -346,7 +346,7 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  /* min-height: 0; causes background to not resize properly */
 }
 .empty-msg { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
 
@@ -382,6 +382,83 @@ html, body {
   flex-shrink: 0;
 }
 .team-list-actions .btn {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.facecam-player-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.facecam-platform-select {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+}
+.facecam-player-row .input-text {
+  height: 40px;
+  width: 100%;
+}
+.facecam-player-id {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+#add-facecam-player-id::-webkit-outer-spin-button,
+#add-facecam-player-id::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+#add-facecam-player-id {
+  -moz-appearance: textfield; /* Firefox */
+}
+.facecam-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.facecam-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.facecam-middle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.facecam-platform-logo {
+  width: 30px; height: 30px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.facecam-list-name {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.facecam-list-steam-id {
+  font-size: 14px;
+  color: var(--text2);
+}
+.facecam-list-link {
+  font-size: 14px;
+  color: var(--accent);
+  word-break: break-all;
+}
+.facecam-list-actions {
+  display: flex;
+  gap: 6px;
+}
+.facecam-list-actions .btn {
   padding: 5px 10px;
   font-size: 12px;
 }

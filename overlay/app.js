@@ -162,8 +162,42 @@ function renderPlayerPanels(players, spectated) {
   buildPanel('players-orange', orange, 'orange');
 }
 
+// ── Facecams ─────────────────────────────────────────────────────────────
+function renderFacecams(players, facecams) {
+  players.forEach(p => {
+    const facecamid = p.primaryid.split("|")[1];
+    const fc = facecams.find(fc => fc.platformId === facecamid);
+
+    if(!fc) {
+      const existing = document.getElementById(`player-${facecamid}-facecam`);
+      if(existing) {
+        existing.remove();
+      }
+      return;
+    };
+
+    if(document.getElementById(`player-${facecamid}-facecam`)) return;
+
+    const container = document.createElement("div");
+    container.id = `player-${facecamid}-facecam`;
+    container.className = "player-facecam-container";
+
+    const iframe = document.createElement("iframe");
+    iframe.id = `facecam-iframe-${facecamid}`;
+    iframe.className = "facecam-iframe";
+    iframe.src = fc.link || '';
+    iframe.frameBorder = "0";
+    iframe.allow = "autoplay; encrypted-media";
+
+    container.appendChild(iframe);
+    const facecamsDiv = el('active-player-bot');
+    if (facecamsDiv) facecamsDiv.appendChild(container);
+  });
+}
+
+
 // ── Bottom active player ──────────────────────────────────────────────────
-function renderActivePlayer(players, spectated) {
+function renderActivePlayer(players, spectated, facecams) {
   const p = players.find(pl => pl.name === spectated);
   const wrap  = el('active-player-bot');
   const boostWrap = el('boost-wrap');
@@ -187,6 +221,18 @@ function renderActivePlayer(players, spectated) {
   if (botBar) {
     botBar.style.width = `${(pct / 100) * 254}px`;
     // Removed team-colored background to keep it white from CSS
+  }
+
+  const facecamp = p.primaryid.split("|")[1];
+  const fc = facecams.find(fc => fc.platformId === facecamp);
+  const containers = document.querySelectorAll('.player-facecam-container');
+  containers.forEach(c => c.style.visibility = 'hidden');
+
+  if(fc) {
+    const facecamdiv = el(`player-${fc.platformId}-facecam`);
+    if(facecamdiv) {
+      facecamdiv.style.visibility = 'visible';
+    }
   }
 
   setText('bot-player-name', p.name);
@@ -239,9 +285,11 @@ function applyFullState(data) {
 
   const players = data.players || [];
   const spectated = data.spectatedPlayer;
-  
+  const facecams = data.savedFacecams || [];
+
+  renderFacecams(players, facecams);
   renderPlayerPanels(players, spectated);
-  renderActivePlayer(players, spectated);
+  renderActivePlayer(players, spectated, facecams);
 
   if (data.banner) {
     const bannerEl = el('sponsor-banner');
@@ -286,7 +334,7 @@ function applyFullState(data) {
   showView(data.view || 'hud');
 }
 
-function applyStateUpdate(gameData, players, spectated) {
+function applyStateUpdate(gameData, players, spectated, facecams) {
   const game = gameData || {};
   setText('score-blue', game.blueScore ?? 0);
   setText('score-orange', game.orangeScore ?? 0);
@@ -298,7 +346,7 @@ function applyStateUpdate(gameData, players, spectated) {
   }
 
   renderPlayerPanels(players, spectated);
-  renderActivePlayer(players, spectated);
+  renderActivePlayer(players, spectated, facecams);
 }
 
 function applyGoalView(goal) {
@@ -413,7 +461,8 @@ function connect() {
         currentState.game = msg.data.game;
         currentState.players = msg.data.players;
         currentState.spectatedPlayer = msg.data.spectatedPlayer;
-        applyStateUpdate(msg.data.game, msg.data.players, msg.data.spectatedPlayer);
+        currentState.facecams = msg.data.facecams;
+        applyStateUpdate(msg.data.game, msg.data.players, msg.data.spectatedPlayer, msg.data.facecams);
         break;
 
       case 'view_change':
