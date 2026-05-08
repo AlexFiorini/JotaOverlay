@@ -495,6 +495,7 @@ el('btn-save-facecam').addEventListener('click', () => {
   const link = el('add-facecam-link').value.trim();
   if (!name) { alert('Enter player name.'); return; }
   if (!platformId) { alert('Enter Platform ID.'); return; }
+  if (!link) { alert('Enter Facecam Link.'); return; }
   send('save_facecam', { name, platform, platformId, link });
   resetAddFacecamForm();
 });
