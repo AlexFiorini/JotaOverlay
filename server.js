@@ -15,11 +15,19 @@ let teamsFile;
 let stateFile;
 let facecamsFile;
 
+let appVersion = '0.0.0';
+try {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  appVersion = pkg.version;
+} catch (e) { console.error('Error reading package.json version:', e); }
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let state = {
+  version: appVersion,
   view: 'hud',              // 'hud' | 'scoreboard' | 'goal'
   eventName: 'ROCKET LEAGUE TOURNAMENT',
   fontFamily: 'Bourgeois',
+  facecamsEnabled: true,
   banner: { visible: false, images: [], interval: 10 },
   bestOf: 5,
   teams: {
@@ -76,6 +84,7 @@ function loadState() {
       const saved = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
       if (saved.eventName) state.eventName = saved.eventName;
       if (saved.fontFamily) state.fontFamily = saved.fontFamily;
+      if (saved.facecamsEnabled !== undefined) state.facecamsEnabled = saved.facecamsEnabled;
       if (saved.banner) state.banner = saved.banner;
       if (saved.bestOf) state.bestOf = saved.bestOf;
       if (saved.teams) state.teams = saved.teams;
@@ -92,6 +101,7 @@ function saveAppState() {
     const toSave = {
       eventName: state.eventName,
       fontFamily: state.fontFamily,
+      facecamsEnabled: state.facecamsEnabled,
       banner: state.banner,
       bestOf: state.bestOf,
       teams: state.teams,
@@ -123,7 +133,7 @@ function getFullState() {
     data: {
       ...state,
       savedTeams,
-      savedFacecams,
+      facecams: savedFacecams,
       formattedTime: formatTime(state.game.time)
     }
   };
@@ -532,11 +542,25 @@ function handleControlMessage(msg, ws) {
       broadcast(bridgeClients, { type: 'view_change', data: { view: 'hud' } });
       break;
 
+    case 'set_facecams_enabled':
+      state.facecamsEnabled = !!msg.data.enabled;
+      saveAppState();
+      broadcastFullState();
+      break;
+
     case 'save_team': {
-      const { name, logo } = msg.data;
-      const idx = savedTeams.findIndex(t => t.name === name);
+      const { name, logo, oldName } = msg.data;
+      let idx = -1;
+      if (oldName) {
+        idx = savedTeams.findIndex(t => t.name === oldName);
+      }
+      if (idx === -1) {
+        idx = savedTeams.findIndex(t => t.name === name);
+      }
+
       if (idx >= 0) savedTeams[idx] = { name, logo };
       else savedTeams.push({ name, logo });
+      
       saveTeams();
       broadcastFullState();
       break;
@@ -549,11 +573,19 @@ function handleControlMessage(msg, ws) {
       break;
     }
 
+    case 'update_teams_order': {
+      savedTeams = msg.data.teams || [];
+      saveTeams();
+      broadcastFullState();
+      break;
+    }
+
     case 'save_facecam': {
-      const { name, platform, platformId, link } = msg.data;
+      const { name, platform, platformId, link, nickname } = msg.data;
       const idx = savedFacecams.findIndex(fc => fc.name === name);
-      if (idx >= 0) savedFacecams[idx] = { name, platform, platformId, link };
-      else savedFacecams.push({ name, platform, platformId, link });
+      const entry = { name, platform, platformId, link, nickname: nickname || name };
+      if (idx >= 0) savedFacecams[idx] = entry;
+      else savedFacecams.push(entry);
       saveFacecams();
       broadcastFullState();
       break;

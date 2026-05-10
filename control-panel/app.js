@@ -7,6 +7,7 @@ let pendingLogoBlue   = null;  // base64 data URL
 let pendingLogoOrange = null;
 let pendingAddLogo    = null;
 let editingTeamName   = null;  // null = add mode, string = edit mode
+let _lastPlayerKey    = '';    // guard to avoid unnecessary select rebuilds
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function send(type, data) {
@@ -96,12 +97,22 @@ function applyState(data) {
   // Saved teams dropdowns + list
   populateSavedTeamsDropdowns(data.savedTeams || []);
   renderTeamsList(data.savedTeams || []);
-  renderFacecamsList(data.savedFacecams || []);
+  syncFacecamRows(data.players || [], data.facecams || [], true);
+  renderSavedFacecams(data.facecams || []);
 
   // RL status
   el('rl-status').textContent = data.rlConnected
     ? '🎮 RL: Connected'
     : '🎮 RL: Disconnected';
+
+  // Facecams enabled
+  const cbFacecams = el('check-facecams-enabled');
+  if (cbFacecams) cbFacecams.checked = data.facecamsEnabled !== false;
+  
+  const facecamsWarning = el('facecams-disabled-warning');
+  if (facecamsWarning) {
+    facecamsWarning.style.display = (data.facecamsEnabled === false) ? 'flex' : 'none';
+  }
 
   // Font family
   if (data.fontFamily) {
@@ -159,6 +170,11 @@ function applyState(data) {
       });
     }
   }
+  // Version
+  if (data.version) {
+    const verEl = el('app-version');
+    if (verEl) verEl.textContent = data.version;
+  }
 }
 
 function syncTeamCard(side, teamData) {
@@ -204,6 +220,11 @@ function renderTeamsList(teams) {
     item.className = 'team-list-item';
     item.dataset.name = t.name;
 
+    const handle = document.createElement('div');
+    handle.className = 'drag-handle';
+    handle.textContent = '⋮⋮';
+    handle.title = 'Drag to reorder';
+
     const logo = document.createElement('img');
     logo.className = 'team-list-logo';
     logo.src = t.logo || '../assets/rl.png';
@@ -227,12 +248,35 @@ function renderTeamsList(teams) {
 
     actions.appendChild(editBtn);
     actions.appendChild(delBtn);
+    
+    item.appendChild(handle);
     item.appendChild(logo);
     item.appendChild(name);
     item.appendChild(actions);
     list.appendChild(item);
   });
+
+  // Init Sortable if not already done or just refresh
+  if (window.Sortable && list.childElementCount > 1) {
+    if (list._sortable) list._sortable.destroy();
+    list._sortable = Sortable.create(list, {
+      handle: '.drag-handle',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      onEnd: () => {
+        const newOrderNames = Array.from(list.querySelectorAll('.team-list-item')).map(el => el.dataset.name);
+        const reordered = newOrderNames.map(name => currentState.savedTeams.find(st => st.name === name));
+        send('update_teams_order', { teams: reordered });
+      }
+    });
+  }
 }
+
+el('btn-sort-teams-abc').addEventListener('click', () => {
+  if (!currentState.savedTeams || currentState.savedTeams.length <= 1) return;
+  const sorted = [...currentState.savedTeams].sort((a, b) => a.name.localeCompare(b.name));
+  send('update_teams_order', { teams: sorted });
+});
 
 function startEditTeam(t) {
   // Switch to Teams tab if needed
@@ -249,6 +293,113 @@ async function deleteTeam(name) {
   if (ok) {
     send('delete_team', { name });
   }
+}
+
+function renderSavedFacecams(facecams) {
+  const list = el('facecams-list');
+  const emptyMsg = el('facecams-empty');
+  if (!list || !emptyMsg) return;
+
+  const items = list.querySelectorAll('.facecam-list-item');
+  items.forEach(it => it.remove());
+
+  emptyMsg.style.display = facecams.length === 0 ? '' : 'none';
+
+  facecams.forEach(fc => {
+    const item = document.createElement('div');
+    item.className = 'facecam-list-item';
+
+    // 1st Row: [Logo] NICKNAME [Delete]
+    const row1 = document.createElement('div');
+    row1.className = 'facecam-top-row';
+    row1.style.marginBottom = '4px';
+
+    const leftGroup = document.createElement('div');
+    leftGroup.style.display = 'flex';
+    leftGroup.style.alignItems = 'center';
+    leftGroup.style.gap = '8px';
+    leftGroup.style.flex = '1';
+
+    const platImg = document.createElement('img');
+    platImg.className = 'facecam-platform-logo';
+    const isBot = !fc.platform || fc.platform === 'none' || fc.platform === 'bot';
+    platImg.src = isBot ? '../assets/rl.png' : `../assets/platforms/${fc.platform}.png`;
+    platImg.onerror = () => { platImg.src = '../assets/rl.png'; }; // fallback
+
+    const nickInput = document.createElement('input');
+    nickInput.type = 'text';
+    nickInput.className = 'input-text';
+    nickInput.style.flex = '1';
+    nickInput.style.fontSize = '12px';
+    nickInput.style.height = '28px';
+    nickInput.style.fontWeight = '700';
+    nickInput.style.background = 'transparent';
+    nickInput.style.border = 'none';
+    nickInput.style.padding = '0';
+    nickInput.value = fc.nickname || fc.name;
+    nickInput.placeholder = 'NICKNAME...';
+
+    leftGroup.appendChild(platImg);
+    leftGroup.appendChild(nickInput);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger btn-sm';
+    delBtn.style.padding = '4px 8px';
+    delBtn.innerHTML = '✕';
+    delBtn.addEventListener('click', async () => {
+      const ok = await customConfirm('Delete Facecam', `Delete saved configuration for "${fc.name}"?`, 'Delete');
+      if (ok) send('delete_facecam', { name: fc.name });
+    });
+
+    row1.appendChild(leftGroup);
+    row1.appendChild(delBtn);
+
+    // 2nd Row: Name/ID info
+    const row2 = document.createElement('div');
+    row2.className = 'facecam-list-steam-id';
+    row2.style.marginBottom = '8px';
+    row2.style.opacity = '0.5';
+    row2.textContent = (fc.platformId && fc.platformId !== fc.name) 
+      ? `${fc.name} (${fc.platformId})` 
+      : fc.name;
+
+    // 3rd Row: URL [Save]
+    const row3 = document.createElement('div');
+    row3.className = 'facecam-middle-row';
+    row3.style.gap = '6px';
+
+    const urlInp = document.createElement('input');
+    urlInp.type = 'text';
+    urlInp.className = 'input-text';
+    urlInp.style.flex = '1';
+    urlInp.style.fontSize = '11px';
+    urlInp.style.height = '32px';
+    urlInp.value = fc.link || '';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-secondary btn-sm';
+    saveBtn.textContent = '💾';
+    saveBtn.title = 'Save changes';
+    saveBtn.addEventListener('click', () => {
+      const newLink = urlInp.value.trim();
+      const newNick = nickInput.value.trim();
+      send('save_facecam', {
+        name: fc.name,
+        platform: fc.platform,
+        platformId: fc.platformId,
+        link: newLink,
+        nickname: newNick
+      });
+    });
+
+    row3.appendChild(urlInp);
+    row3.appendChild(saveBtn);
+
+    item.appendChild(row1);
+    item.appendChild(row2);
+    item.appendChild(row3);
+    list.appendChild(item);
+  });
 }
 
 // ── Event: Event name ─────────────────────────────────────────────────────
@@ -406,7 +557,7 @@ el('add-team-logo').addEventListener('change', async (e) => {
 el('btn-save-team').addEventListener('click', () => {
   const name = el('add-team-name').value.trim().toUpperCase();
   if (!name) { alert('Enter team name.'); return; }
-  send('save_team', { name, logo: pendingAddLogo || null });
+  send('save_team', { name, logo: pendingAddLogo || null, oldName: editingTeamName });
   resetAddTeamForm();
 });
 
@@ -469,6 +620,10 @@ el('select-font').addEventListener('change', function() {
   send('set_font_family', { fontFamily: this.value });
 });
 
+el('check-facecams-enabled').addEventListener('change', function() {
+  send('set_facecams_enabled', { enabled: this.checked });
+});
+
 // ── Banner Settings ───────────────────────────────────────────────────────
 el('check-banner-visible').addEventListener('change', function() {
   send('set_banner_visibility', { visible: this.checked });
@@ -487,119 +642,384 @@ el('input-banner-image').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-// ── Save facecam
-el('btn-save-facecam').addEventListener('click', () => {
-  const name = el('add-facecam-player-name').value.trim();
-  const platform = el('add-facecam-platform').value;
-  const platformId = el('add-facecam-player-id').value.trim();
-  const link = el('add-facecam-link').value.trim();
-  if (!name) { alert('Enter player name.'); return; }
-  if (!platformId) { alert('Enter Platform ID.'); return; }
-  if (!link) { alert('Enter Facecam Link.'); return; }
-  send('save_facecam', { name, platform, platformId, link });
-  resetAddFacecamForm();
-});
+// ── Facecams: mode selector & grid logic ─────────────────────────────────
+let facecamMode = 3; // default 3v3
 
-el('btn-clear-facecam-form').addEventListener('click', resetAddFacecamForm);
+const PLATFORMS = [
+  { key: 'steam',       label: 'Steam'       },
+  { key: 'epic',        label: 'Epic'        },
+  { key: 'playstation', label: 'PlayStation' },
+  { key: 'xbox',        label: 'Xbox'        },
+  { key: 'nintendo',    label: 'Nintendo'    }
+];
 
-function resetAddFacecamForm() {
-  el('add-facecam-player-name').value = '';
-  el('add-facecam-platform').value = 'steam';
-  el('add-facecam-player-id').value = '';
-  el('add-facecam-link').value = '';
-}
-
-function resetAddTeamForm() {
-  editingTeamName = null;
-  el('add-team-name').value = '';
-  el('add-team-logo').value = '';
-  pendingAddLogo = null;
-  el('add-team-logo-preview').src = '../assets/rl.png';
-  el('btn-save-team').textContent = '💾 Save Team';
-}
-
-// ── Facecam list ───────────────────────────────────────────────
-function renderFacecamsList(facecams) {
-  const list     = el('facecams-list');
-  const emptyMsg = el('facecams-empty');
-  if (!list) return;
-
-  // Remove existing items (keep empty-msg)
-  list.querySelectorAll('.facecam-list-item').forEach(i => i.remove());
-
-  emptyMsg.style.display = facecams.length === 0 ? '' : 'none';
-
-  facecams.forEach(fc => {
-    const item = document.createElement('div');
-    item.className = 'facecam-list-item';
-
-    const topRow = document.createElement('div');
-    topRow.className = 'facecam-top-row';
-
-    const name = document.createElement('div');
-    name.className = 'facecam-list-name';
-    name.textContent = fc.name;
-
-    const actions = document.createElement('div');
-    actions.className = 'facecam-list-actions';
-
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-secondary';
-    editBtn.textContent = 'Edit';
-    editBtn.addEventListener('click', () => startEditFacecam(fc));
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-danger';
-    delBtn.textContent = '✕';
-    delBtn.addEventListener('click', () => deleteFacecam(fc.name));
-
-    actions.appendChild(editBtn);
-    actions.appendChild(delBtn);
-
-    topRow.appendChild(name);
-    topRow.appendChild(actions);
-
-    const middleRow = document.createElement('div');
-    middleRow.className = 'facecam-middle-row';
-
-    const platform = document.createElement('img');
-    platform.className = 'facecam-platform-logo';
-    platform.src = '../assets/platforms/' + fc.platform + '.png';
-
-    const platformId = document.createElement('div');
-    platformId.className = 'facecam-list-steam-id';
-    platformId.textContent = fc.platformId;
-
-    middleRow.appendChild(platform);
-    middleRow.appendChild(platformId);
-
-    const facecamLink = document.createElement('div');
-    facecamLink.className = 'facecam-list-link';
-    facecamLink.textContent = fc.link;
-
-    item.appendChild(topRow);
-    item.appendChild(middleRow);
-    item.appendChild(facecamLink);
-    list.appendChild(item);
+function updateFacecamRows(mode) {
+  ['blue', 'orange'].forEach(side => {
+    for (let i = 0; i < 4; i++) {
+      const row = el(`fcrow-${side}-${i}`);
+      if (row) row.style.display = i < mode ? '' : 'none';
+    }
   });
 }
 
-function startEditFacecam(fc) {
-  document.querySelector('[data-tab="facecams"]').click();
-  editingFacecamName = fc.name;
-  el('add-facecam-player-name').value = fc.name;
-  el('add-facecam-platform').value = fc.platform;
-  el('add-facecam-player-id').value = fc.platformId;
-  el('add-facecam-link').value = fc.link;
-  el('btn-save-facecam').textContent = '✏️ Update Facecam';
+document.querySelectorAll('input[name="fcmode"]').forEach(r => {
+  r.addEventListener('change', function() {
+    if (this.checked) {
+      facecamMode = parseInt(this.value);
+      updateFacecamRows(facecamMode);
+    }
+  });
+});
+
+function updateFacecamDropdowns(players) {
+  // Between matches players = [] — keep existing dropdown state, don't wipe it
+  if (!players || players.length === 0) return;
+
+  const blue   = players.filter(p => p.team === 0).sort((a,b) => a.name.localeCompare(b.name));
+  const orange = players.filter(p => p.team === 1).sort((a,b) => a.name.localeCompare(b.name));
+
+  // ── Guard: skip DOM rebuild if player list hasn't changed (prevents focus loss)
+  const newKey = [...blue, ...orange].map(p => p.name).join('|');
+  const needsRebuild = newKey !== _lastPlayerKey;
+  _lastPlayerKey = newKey;
+
+  // Auto-detect mode from active player count
+  const detected = Math.min(Math.max(blue.length, orange.length, 1), 4);
+  if ((blue.length > 0 || orange.length > 0) && detected !== facecamMode) {
+    facecamMode = detected;
+    document.querySelectorAll('input[name="fcmode"]').forEach(r => {
+      r.checked = parseInt(r.value) === facecamMode;
+    });
+    updateFacecamRows(facecamMode);
+  }
+
+  if (!needsRebuild) return false; // Don't touch the DOM if nothing changed
+
+  function populateSide(side, list) {
+    for (let i = 0; i < 4; i++) {
+      const sel = el(`fc-${side}-${i}-name`);
+      if (!sel || document.activeElement === sel) continue; // never rebuild focused select
+      const current = sel.value;
+      sel.innerHTML = '<option value="">— Select —</option>';
+      list.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+      if (current && list.find(p => p.name === current)) sel.value = current;
+    }
+  }
+
+  populateSide('blue', blue);
+  populateSide('orange', orange);
+  return true;
 }
 
-async function deleteFacecam(name) {
-  const ok = await customConfirm('Delete Facecam', `Are you sure you want to delete the facecam "${name}"?`, 'Delete');
-  if (ok) {
-    send('delete_facecam', { name });
+function syncFacecamRows(players, savedFacecams, forceSync = false) {
+  const playersChanged = updateFacecamDropdowns(players);
+  
+  // If players haven't changed and we are not forcing sync (e.g. initial load or after save),
+  // do NOT touch the inputs. This prevents clearing fields while the user is typing.
+  if (!playersChanged && !forceSync) return;
+
+  const blue   = players.filter(p => p.team === 0).sort((a,b) => a.name.localeCompare(b.name));
+  const orange = players.filter(p => p.team === 1).sort((a,b) => a.name.localeCompare(b.name));
+
+  function syncSide(side, list) {
+    list.forEach((p, i) => {
+      if (i >= 4) return;
+      const rawId = p.primaryid ? String(p.primaryid).split('|')[1] || '' : '';
+      
+      // Prioritize ID lookup, fallback to Name
+      let saved = null;
+      if (rawId) saved = savedFacecams.find(fc => fc.platformId && fc.platformId === rawId);
+      if (!saved) saved = savedFacecams.find(fc => fc.name === p.name);
+
+      // Player name dropdown
+      const sel = el(`fc-${side}-${i}-name`);
+      if (sel && p.name && document.activeElement !== sel) sel.value = p.name;
+
+      // Always set ID and URL — clear them if no saved facecam for this player
+      const idEl = el(`fc-${side}-${i}-id`);
+      if (idEl && document.activeElement !== idEl)
+        idEl.value = saved ? (saved.platformId || '') : '';
+
+      const urlEl = el(`fc-${side}-${i}-url`);
+      if (urlEl && document.activeElement !== urlEl)
+        urlEl.value = saved ? (saved.link || '') : '';
+
+      // Platform picker — reset to steam if no saved facecam
+      const platform = (saved && saved.platform) ? saved.platform : 'steam';
+      const picker = el(`fc-${side}-${i}-platform`);
+      if (picker) {
+        picker.querySelectorAll('.plat-icon').forEach(icon => {
+          icon.classList.toggle('selected', icon.dataset.platform === platform);
+        });
+        picker.dataset.value = platform;
+      }
+
+      // Update preview
+      const previewWrap   = el(`fc-${side}-${i}-preview-wrap`);
+      const previewIframe = el(`fc-${side}-${i}-preview`);
+      const previewToggle = el(`fc-${side}-${i}-preview-toggle`);
+      
+      if (previewWrap && previewIframe && previewToggle) {
+        if (saved && saved.link) {
+          // Store the URL for lazy loading
+          previewIframe.dataset.src = saved.link;
+          previewToggle.style.display = '';
+          
+          // If it's already open, sync the src
+          if (previewWrap.classList.contains('open') && previewIframe.src !== saved.link) {
+            previewIframe.src = saved.link;
+          }
+        } else {
+          previewIframe.src = 'about:blank';
+          previewIframe.dataset.src = '';
+          previewToggle.style.display = 'none';
+          previewWrap.classList.remove('open');
+          previewToggle.classList.remove('open');
+        }
+      }
+    });
+  }
+
+  syncSide('blue', blue);
+  syncSide('orange', orange);
+}
+
+// ── Facecams: manual add ──────────────────────────────────────────────────
+el('btn-add-facecam-manual').addEventListener('click', () => {
+  const name     = el('add-fc-name').value.trim();
+  const platform = el('add-fc-platform').value;
+  const link     = el('add-fc-url').value.trim();
+  
+  if (!name || !link) {
+    alert('Please enter both a Name/ID and a URL.');
+    return;
+  }
+
+  send('save_facecam', {
+    name,
+    platform,
+    platformId: name, // Default platformId to name for manual entries
+    link
+  });
+
+  // Clear inputs
+  el('add-fc-name').value = '';
+  el('add-fc-url').value = '';
+});
+
+
+function applyFacecamRow(side, idx) {
+  const nameEl     = el(`fc-${side}-${idx}-name`);
+  const platformEl = el(`fc-${side}-${idx}-platform`);
+  const idEl       = el(`fc-${side}-${idx}-id`);
+  const urlEl      = el(`fc-${side}-${idx}-url`);
+  const name       = nameEl     ? nameEl.value.trim()                    : '';
+  const platform   = platformEl ? (platformEl.dataset.value || 'steam')  : 'steam';
+  const platformId = idEl       ? idEl.value.trim()                      : '';
+  const link       = urlEl      ? urlEl.value.trim()                     : '';
+  if (!name && !platformId) { alert('Select a player or enter a Primary ID.'); return; }
+  if (!link) { alert('Enter the facecam URL.'); return; }
+  const key = name || platformId;
+  send('save_facecam', { name: key, platform, platformId: platformId || null, link });
+  
+  // Refresh preview immediately and open it
+  const previewWrap   = el(`fc-${side}-${idx}-preview-wrap`);
+  const previewIframe = el(`fc-${side}-${idx}-preview`);
+  const previewToggle = el(`fc-${side}-${idx}-preview-toggle`);
+  
+  if (previewWrap && previewIframe && previewToggle) {
+    previewIframe.dataset.src = link;
+    previewIframe.src = link;
+    previewToggle.style.display = '';
+    previewToggle.classList.add('open');
+    previewWrap.classList.add('open');
+    const span = previewToggle.querySelector('span');
+    if (span) span.textContent = 'Hide Preview';
   }
 }
+
+function deleteFacecamRow(side, idx) {
+  const nameEl     = el(`fc-${side}-${idx}-name`);
+  const idEl       = el(`fc-${side}-${idx}-id`);
+  const urlEl      = el(`fc-${side}-${idx}-url`);
+  const name       = nameEl ? nameEl.value.trim() : '';
+  const platformId = idEl   ? idEl.value.trim()   : '';
+  
+  const key = name || platformId;
+  if (key) {
+    send('delete_facecam', { name: key });
+  }
+
+  // Clear fields
+  if (urlEl) urlEl.value = '';
+  if (idEl && !name) idEl.value = ''; // only clear ID if not selected via name
+
+  // Hide preview
+  const previewWrap   = el(`fc-${side}-${idx}-preview-wrap`);
+  const previewIframe = el(`fc-${side}-${idx}-preview`);
+  const previewToggle = el(`fc-${side}-${idx}-preview-toggle`);
+  if (previewWrap && previewIframe && previewToggle) {
+    previewIframe.src = 'about:blank';
+    previewIframe.dataset.src = '';
+    previewToggle.style.display = 'none';
+    previewWrap.classList.remove('open');
+    previewToggle.classList.remove('open');
+  }
+}
+
+
+// ── Platform pickers (generated via JS to avoid repeating HTML 8 times) ──────
+function initPlatformPickers() {
+  ['blue', 'orange'].forEach(side => {
+    for (let i = 0; i < 4; i++) {
+      const idInput = el(`fc-${side}-${i}-id`);
+      if (!idInput) continue;
+      const fieldRow = idInput.closest('.field-row');
+      if (!fieldRow) continue;
+
+      // Update label
+      const lbl = fieldRow.querySelector('.field-label');
+      if (lbl) lbl.innerHTML = 'Platform & Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span>';
+
+      // Build picker
+      const picker = document.createElement('div');
+      picker.className = 'platform-picker';
+      picker.id = `fc-${side}-${i}-platform`;
+      picker.dataset.value = 'steam';
+      PLATFORMS.forEach((p, pi) => {
+        const img = document.createElement('img');
+        img.src = `../assets/platforms/${p.key}.png`;
+        img.className = 'plat-icon' + (pi === 0 ? ' selected' : '');
+        img.title = p.label;
+        img.dataset.platform = p.key;
+        img.addEventListener('click', () => {
+          picker.querySelectorAll('.plat-icon').forEach(ic => ic.classList.remove('selected'));
+          img.classList.add('selected');
+          picker.dataset.value = p.key;
+        });
+        picker.appendChild(img);
+      });
+
+      // Wrap picker + input side-by-side
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex; gap:6px; align-items:center;';
+      fieldRow.removeChild(idInput);
+      idInput.style.flex = '1';
+      wrapper.appendChild(picker);
+      wrapper.appendChild(idInput);
+      fieldRow.appendChild(wrapper);
+    }
+  });
+}
+
+// ── Facecam live previews ────────────────────────────────────────────
+function initFacecamPreviews() {
+  ['blue', 'orange'].forEach(side => {
+    for (let i = 0; i < 4; i++) {
+      const row = el(`fcrow-${side}-${i}`);
+      if (!row) continue;
+      const btn = row.querySelector('.btn');
+      if (!btn) continue;
+
+      // Create toggle
+      const toggle = document.createElement('div');
+      toggle.className = 'fc-preview-toggle';
+      toggle.id = `fc-${side}-${i}-preview-toggle`;
+      toggle.innerHTML = '<span>Show Preview</span>';
+      toggle.style.display = 'none';
+
+      // Create wrap
+      const wrap = document.createElement('div');
+      wrap.className = 'fc-preview-wrap';
+      wrap.id = `fc-${side}-${i}-preview-wrap`;
+
+      const iframe = document.createElement('iframe');
+      iframe.id = `fc-${side}-${i}-preview`;
+      iframe.className = 'fc-preview-iframe';
+      iframe.frameBorder = '0';
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.loading = 'lazy';
+      iframe.referrerPolicy = 'no-referrer';
+      iframe.src = 'about:blank';
+
+      wrap.appendChild(iframe);
+
+      // Toggle logic
+      toggle.addEventListener('click', () => {
+        const isOpen = wrap.classList.toggle('open');
+        toggle.classList.toggle('open', isOpen);
+        toggle.querySelector('span').textContent = isOpen ? 'Hide Preview' : 'Show Preview';
+        
+        // Lazy load src on open
+        if (isOpen && (iframe.src === 'about:blank' || iframe.src === '')) {
+          const urlVal = el(`fc-${side}-${i}-url`).value.trim();
+          const target = iframe.dataset.src || urlVal;
+          if (target) iframe.src = target;
+        }
+      });
+
+      // ── Add Delete Button next to URL input
+      const urlInput = el(`fc-${side}-${i}-url`);
+      if (urlInput) {
+        const urlRow = urlInput.parentElement;
+        if (urlRow && urlRow.classList.contains('field-row')) {
+          const wrapper = document.createElement('div');
+          wrapper.style.cssText = 'display:flex; gap:6px; align-items:center;';
+          urlRow.removeChild(urlInput);
+          urlInput.style.flex = '1';
+          
+          const delBtn = document.createElement('div');
+          delBtn.className = 'btn-delete-fc';
+          delBtn.innerHTML = '✕';
+          delBtn.title = 'Delete Facecam';
+          delBtn.addEventListener('click', () => deleteFacecamRow(side, i));
+          
+          wrapper.appendChild(urlInput);
+          wrapper.appendChild(delBtn);
+          urlRow.appendChild(wrapper);
+        }
+      }
+
+      // Rearrange: Insert toggle and wrap before the button
+      // This puts the button at the very bottom of the row
+      btn.insertAdjacentElement('beforebegin', toggle);
+      btn.insertAdjacentElement('beforebegin', wrap);
+      
+      // Add a bit of margin to the button to separate it from the preview
+      btn.style.marginTop = '10px';
+    }
+  });
+}
+
+// Initialise on load
+updateFacecamRows(facecamMode);
+initPlatformPickers();
+initFacecamPreviews();
+
+// ── Apply All Facecams ────────────────────────────────────────────────────
+el('btn-apply-all-facecams').addEventListener('click', () => {
+  let saved = 0;
+  ['blue', 'orange'].forEach(side => {
+    for (let i = 0; i < facecamMode; i++) {
+      const nameEl = el(`fc-${side}-${i}-name`);
+      const idEl   = el(`fc-${side}-${i}-id`);
+      const urlEl  = el(`fc-${side}-${i}-url`);
+      const name       = nameEl ? nameEl.value.trim() : '';
+      const platformId = idEl   ? idEl.value.trim()   : '';
+      const link       = urlEl  ? urlEl.value.trim()   : '';
+      if ((name || platformId) && link) {
+        applyFacecamRow(side, i);
+        saved++;
+      }
+    }
+  });
+  if (saved === 0) alert('No facecams to apply — fill in at least one URL.');
+});
 
 // ── RL status ─────────────────────────────────────────────────────────────
 // (Updated via full_state)
@@ -619,6 +1039,11 @@ function connect() {
 
     if (msg.type === 'full_state') {
       applyState(msg.data);
+    } else if (msg.type === 'state_update') {
+      // Sync facecam grid live as players join — skip when between matches (empty array)
+      if (msg.data.players && msg.data.players.length > 0) {
+        syncFacecamRows(msg.data.players, msg.data.facecams || []);
+      }
     } else if (msg.type === 'rl_status') {
       el('rl-status').textContent = msg.data.connected
         ? '🎮 RL: Connected'

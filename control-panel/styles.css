@@ -386,6 +386,25 @@ html, body {
   font-size: 12px;
 }
 
+.drag-handle {
+  cursor: grab;
+  color: var(--muted);
+  font-size: 18px;
+  padding: 0 4px;
+  user-select: none;
+  opacity: 0.5;
+  transition: opacity 0.2s, color 0.2s;
+}
+.drag-handle:hover { opacity: 1; color: var(--accent); }
+.drag-handle:active { cursor: grabbing; }
+
+.sortable-ghost {
+  opacity: 0.4;
+  background: var(--accent-transparent) !important;
+  border: 1px dashed var(--accent) !important;
+}
+
+
 .facecam-player-row {
   display: flex;
   gap: 10px;
@@ -413,6 +432,12 @@ html, body {
 #add-facecam-player-id {
   -moz-appearance: textfield; /* Firefox */
 }
+.facecams-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
 .facecam-list-item {
   display: flex;
   flex-direction: column;
@@ -434,29 +459,25 @@ html, body {
   gap: 10px;
 }
 .facecam-platform-logo {
-  width: 30px; height: 30px;
+  width: 24px; height: 24px;
   object-fit: contain;
   border-radius: 4px;
   flex-shrink: 0;
 }
 .facecam-list-name {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .facecam-list-steam-id {
-  font-size: 14px;
+  font-size: 11px;
   color: var(--text2);
-}
-.facecam-list-link {
-  font-size: 14px;
-  color: var(--accent);
-  word-break: break-all;
-}
-.facecam-list-actions {
-  display: flex;
-  gap: 6px;
+  font-family: monospace;
 }
 .facecam-list-actions .btn {
   padding: 5px 10px;
@@ -544,3 +565,164 @@ html, body {
   justify-content: flex-end;
 }
 .modal-footer .btn { min-width: 100px; }
+
+/* ─── Facecams grid ──────────────────────────────────────────────────────── */
+.facecam-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.facecam-col {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.facecam-col-header {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.facecam-row {
+  padding: 12px 14px 10px;
+  border-top: 1px solid var(--border);
+}
+.facecam-row:first-of-type { border-top: none; }
+.facecam-row .btn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+.facecam-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+}
+.facecam-mode-bar .best-of-options { gap: 6px; }
+
+/* ─── Platform icon picker ───────────────────────────────────────────────── */
+.platform-picker {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+.plat-icon {
+  width: 22px; height: 22px;
+  object-fit: contain;
+  opacity: 0.3;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.plat-icon:hover  { opacity: 0.75; transform: scale(1.15); }
+.plat-icon.selected {
+  opacity: 1;
+  transform: scale(1.1);
+  background: rgba(255,255,255,0.12);
+}
+
+/* ─── Facecam live preview ───────────────────────────────────────────────── */
+.fc-preview-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  transition: all 0.15s;
+  user-select: none;
+}
+.fc-preview-toggle:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+.fc-preview-toggle::after {
+  content: '▼';
+  font-size: 8px;
+  opacity: 0.5;
+  transition: transform 0.2s;
+}
+.fc-preview-toggle.open::after {
+  transform: rotate(180deg);
+}
+
+.fc-preview-wrap {
+  position: relative;
+  margin-top: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  user-select: none;
+  cursor: default;
+  display: none; /* Hidden by default, toggled via JS */
+}
+.fc-preview-wrap.open {
+  display: block;
+}
+.fc-preview-wrap::before {
+  content: '📹 LIVE PREVIEW';
+  position: absolute;
+  top: 4px; left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.45);
+  z-index: 1;
+  pointer-events: none;
+}
+.fc-preview-iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.btn-delete-fc {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+  user-select: none;
+}
+.btn-delete-fc:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+

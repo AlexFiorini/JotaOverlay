@@ -5,6 +5,10 @@ const server = require('./server');
 nativeTheme.themeSource = 'dark';
 app.disableHardwareAcceleration();
 
+// Silence internal Chromium logs/errors (like STUN/TURN resolution errors) to keep the console clean
+app.commandLine.appendSwitch('log-level', '3'); // 3 = Fatal only
+app.commandLine.appendSwitch('disable-logging');
+
 let controlPanel;
 
 function createControlPanel() {

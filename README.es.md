@@ -41,6 +41,7 @@ Intrucciones en inglés disponibles en: [README.md](README.md)
 *   Overlay automático compatible con programas de retransmisión (OBS, Streamlabs Desktop, etc.) usando fuente de navegador.
     *   Pantalla ingame compatible con 1v1, 2v2, 3v3 y 4v4.
     *   Tags con nombres de jugadores, boost y otros stats.
+    *   Cámaras de jugadores ([agradecimientos a Alex Fiorini por su aportación 💖](https://github.com/AlexFiorini/)).
     *   Pantalla de gol automática con estadísticas del gol (goleador, velocidad y asistente).
     *   Banner para múltiples patrocinadores.
     *   Pantalla final de partido con scoreboards y MVP.

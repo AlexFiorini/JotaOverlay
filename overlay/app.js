@@ -162,32 +162,53 @@ function renderPlayerPanels(players, spectated) {
   buildPanel('players-orange', orange, 'orange');
 }
 
+// ── Helper: find facecam by player name OR platformId ────────────────────
+function findFacecam(player, facecams) {
+  if (!facecams || !facecams.length) return null;
+  const rawId = player.primaryid ? String(player.primaryid).split('|')[1] : null;
+  
+  // 1. Try to find by ID first (stronger priority)
+  if (rawId) {
+    const byId = facecams.find(fc => fc.platformId && fc.platformId === rawId);
+    if (byId) return byId;
+  }
+
+  // 2. Fallback to name
+  return facecams.find(fc => fc.name === player.name) || null;
+}
+
+function safeId(name) {
+  return name ? name.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown';
+}
+
 // ── Facecams ─────────────────────────────────────────────────────────────
 function renderFacecams(players, facecams) {
+  if (currentState.facecamsEnabled === false) {
+    document.querySelectorAll('.player-facecam-container').forEach(c => c.remove());
+    return;
+  }
   players.forEach(p => {
-    const facecamid = p.primaryid.split("|")[1];
-    const fc = facecams.find(fc => fc.platformId === facecamid);
+    const fc  = findFacecam(p, facecams);
+    const cid = `player-${safeId(p.name)}-facecam`;
 
-    if(!fc) {
-      const existing = document.getElementById(`player-${facecamid}-facecam`);
-      if(existing) {
-        existing.remove();
-      }
+    if (!fc) {
+      const existing = document.getElementById(cid);
+      if (existing) existing.remove();
       return;
-    };
+    }
 
-    if(document.getElementById(`player-${facecamid}-facecam`)) return;
+    if (document.getElementById(cid)) return;
 
-    const container = document.createElement("div");
-    container.id = `player-${facecamid}-facecam`;
-    container.className = "player-facecam-container";
+    const container = document.createElement('div');
+    container.id = cid;
+    container.className = 'player-facecam-container';
 
-    const iframe = document.createElement("iframe");
-    iframe.id = `facecam-iframe-${facecamid}`;
-    iframe.className = "facecam-iframe";
+    const iframe = document.createElement('iframe');
+    iframe.id = `facecam-iframe-${safeId(p.name)}`;
+    iframe.className = 'facecam-iframe';
     iframe.src = fc.link || '';
-    iframe.frameBorder = "0";
-    iframe.allow = "autoplay; encrypted-media";
+    iframe.frameBorder = '0';
+    iframe.allow = 'autoplay; encrypted-media';
 
     container.appendChild(iframe);
     const facecamsDiv = el('active-player-bot');
@@ -223,16 +244,13 @@ function renderActivePlayer(players, spectated, facecams) {
     // Removed team-colored background to keep it white from CSS
   }
 
-  const facecamp = p.primaryid.split("|")[1];
-  const fc = facecams.find(fc => fc.platformId === facecamp);
+  const fc = (currentState.facecamsEnabled !== false) ? findFacecam(p, facecams) : null;
   const containers = document.querySelectorAll('.player-facecam-container');
   containers.forEach(c => c.style.visibility = 'hidden');
 
-  if(fc) {
-    const facecamdiv = el(`player-${fc.platformId}-facecam`);
-    if(facecamdiv) {
-      facecamdiv.style.visibility = 'visible';
-    }
+  if (fc) {
+    const facecamdiv = el(`player-${safeId(p.name)}-facecam`);
+    if (facecamdiv) facecamdiv.style.visibility = 'visible';
   }
 
   setText('bot-player-name', p.name);
@@ -345,8 +363,9 @@ function applyStateUpdate(gameData, players, spectated, facecams) {
     timerEl.className = game.isOT ? 'timer-ot' : 'timer';
   }
 
+  renderFacecams(players, facecams || []);
   renderPlayerPanels(players, spectated);
-  renderActivePlayer(players, spectated, facecams);
+  renderActivePlayer(players, spectated, facecams || []);
 }
 
 function applyGoalView(goal) {
@@ -474,6 +493,8 @@ function connect() {
       case 'game_reset':
         el('players-blue').innerHTML = '';
         el('players-orange').innerHTML = '';
+        // Remove stale facecam containers so they're rebuilt fresh for the new match
+        document.querySelectorAll('.player-facecam-container').forEach(c => c.remove());
         if(el('active-player-bot')) el('active-player-bot').classList.add('hidden');
         if(el('boost-wrap')) el('boost-wrap').classList.add('hidden');
         break;

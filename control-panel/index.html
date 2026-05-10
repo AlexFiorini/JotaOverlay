@@ -23,9 +23,9 @@
 <!-- Tabs -->
 <div class="tabs">
   <button class="tab-btn active" data-tab="principal" id="tab-principal">Main</button>
+  <button class="tab-btn" data-tab="facecams" id="tab-facecams">Facecams</button>
   <button class="tab-btn" data-tab="equipos" id="tab-equipos">Teams</button>
   <button class="tab-btn" data-tab="ajustes" id="tab-ajustes">Settings</button>
-  <button class="tab-btn" data-tab="facecams" id="tab-facecams">Facecams</button>
 </div>
 
 <!-- ══════════════════════════════════════ TAB: MAIN ═══ -->
@@ -180,10 +180,204 @@
 
   <!-- Signature -->
   <div class="signature">
-    Made with ❤️ by <a href="https://x.com/jotasonder" target="_blank">@jotasonder</a>
+    Version v<span id="app-version">0.0.0</span> | Made with ❤️ by <a href="https://x.com/jotasonder" target="_blank">@jotasonder</a>
   </div>
 
 </div><!-- /tab-principal-content -->
+
+
+<!-- ════════════════════════════════════════════ TAB: FACE CAMS ═══ -->
+<div id="tab-facecams-content" class="tab-content">
+  <div id="facecams-disabled-warning" style="display: none; background: #c53030; color: white; padding: 10px 15px; border-radius: 8px; margin: 0 15px 20px 15px; font-weight: 600; align-items: center; gap: 10px;">
+    <span>⚠️ Facecams are currently DISABLED in Settings. They will not be visible on the overlay.</span>
+  </div>
+  <section class="section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 class="section-title" style="margin-bottom:0;">📸 Facecams</h3>
+      <div class="facecam-mode-bar" style="margin-bottom:0; border:none; background:transparent; padding:0;">
+        <span class="field-label" style="white-space:nowrap;">Mode:</span>
+        <div class="best-of-options">
+          <label class="bo-opt"><input type="radio" name="fcmode" value="1"> 1v1</label>
+          <label class="bo-opt"><input type="radio" name="fcmode" value="2"> 2v2</label>
+          <label class="bo-opt"><input type="radio" name="fcmode" value="3" checked> 3v3</label>
+          <label class="bo-opt"><input type="radio" name="fcmode" value="4"> 4v4</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="facecam-grid">
+
+      <!-- ── BLUE column ── -->
+      <div class="facecam-col">
+        <div class="facecam-col-header blue-header">🔵 Blue Team</div>
+
+        <div class="facecam-row" id="fcrow-blue-0">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-blue-0-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-blue-0-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-blue-0-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-blue" onclick="applyFacecamRow('blue',0)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-blue-1">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-blue-1-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-blue-1-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-blue-1-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-blue" onclick="applyFacecamRow('blue',1)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-blue-2">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-blue-2-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-blue-2-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-blue-2-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-blue" onclick="applyFacecamRow('blue',2)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-blue-3">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-blue-3-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-blue-3-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-blue-3-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-blue" onclick="applyFacecamRow('blue',3)">✔ Apply</button>
+        </div>
+      </div>
+
+      <!-- ── ORANGE column ── -->
+      <div class="facecam-col">
+        <div class="facecam-col-header orange-header">🟠 Orange Team</div>
+
+        <div class="facecam-row" id="fcrow-orange-0">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-orange-0-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-orange-0-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-orange-0-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-orange" onclick="applyFacecamRow('orange',0)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-orange-1">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-orange-1-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-orange-1-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-orange-1-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-orange" onclick="applyFacecamRow('orange',1)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-orange-2">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-orange-2-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-orange-2-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-orange-2-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-orange" onclick="applyFacecamRow('orange',2)">✔ Apply</button>
+        </div>
+
+        <div class="facecam-row" id="fcrow-orange-3">
+          <div class="field-row">
+            <label class="field-label">Player</label>
+            <select id="fc-orange-3-name" class="input-select"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">Primary ID <span style="opacity:0.45;font-weight:400;">(optional)</span></label>
+            <input type="text" id="fc-orange-3-id" class="input-text" placeholder="76561198...">
+          </div>
+          <div class="field-row">
+            <label class="field-label">🔗 Facecam URL</label>
+            <input type="text" id="fc-orange-3-url" class="input-text" placeholder="https://vdo.ninja/?view=...">
+          </div>
+          <button class="btn btn-orange" onclick="applyFacecamRow('orange',3)">✔ Apply</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:14px;">
+      <button class="btn btn-primary" id="btn-apply-all-facecams" style="width:100%; padding:11px; font-size:13px;">💾 Apply All Facecams</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">📋 Saved Facecams</h3>
+    
+    <div class="add-facecam-form" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 16px;">
+      <div style="display: grid; grid-template-columns: 1fr 120px; gap: 8px; margin-bottom: 8px;">
+        <input type="text" id="add-fc-name" class="input-text" placeholder="Player Name or ID...">
+        <select id="add-fc-platform" class="input-select">
+          <option value="steam">Steam</option>
+          <option value="epic">Epic</option>
+          <option value="playstation">PSN</option>
+          <option value="xbox">Xbox</option>
+          <option value="nintendo">Switch</option>
+          <option value="bot">Name</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="add-fc-url" class="input-text" style="flex: 1;" placeholder="Facecam URL (https://vdo.ninja/...)">
+        <button class="btn btn-primary" id="btn-add-facecam-manual" style="padding: 0 16px;">➕ Add</button>
+      </div>
+    </div>
+
+    <div id="facecams-list" class="facecams-list">
+      <p class="empty-msg" id="facecams-empty">No saved facecams yet.</p>
+    </div>
+  </section>
+</div><!-- /tab-facecams-content -->
 
 
 <!-- ════════════════════════════════════════════ TAB: TEAMS ═══ -->
@@ -201,8 +395,11 @@
           <input type="text" id="add-team-name" class="input-text" placeholder="KARMINE CORP">
         </div>
         <div class="field-row">
-          <label class="field-label" for="add-team-logo">Logo (Image)</label>
-          <input type="file" id="add-team-logo" class="input-file" accept="image/*">
+          <label class="field-label">Logo (Image)</label>
+          <label for="add-team-logo" class="btn btn-secondary" style="cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>📁 Select Logo</span>
+          </label>
+          <input type="file" id="add-team-logo" class="input-file" accept="image/*" style="display: none;">
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" id="btn-save-team">💾 Save Team</button>
@@ -213,7 +410,10 @@
   </section>
 
   <section class="section">
-    <h3 class="section-title">📋 Saved Teams</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 class="section-title" style="margin-bottom: 0;">📋 Saved Teams</h3>
+      <button class="btn btn-ghost btn-sm" id="btn-sort-teams-abc">🔤 Sort Alphabetically</button>
+    </div>
     <div id="teams-list" class="teams-list">
       <p class="empty-msg" id="teams-empty">No saved teams yet.</p>
     </div>
@@ -230,6 +430,15 @@
       <select id="select-font" class="input-select">
         <option value="Bourgeois">Bourgeois</option>
       </select>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">📸 Facecams Settings</h3>
+    <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+      <label for="check-facecams-enabled" style="font-weight: 600; color: #e0e0e0; cursor: pointer;">Enable Facecams</label>
+      <input type="checkbox" id="check-facecams-enabled" style="width: 18px; height: 18px; cursor: pointer; accent-color: #055fdb;" checked>
+      <span style="font-size: 12px; color: var(--muted); margin-left: 10px;">(Toggles visibility on the overlay)</span>
     </div>
   </section>
 
@@ -267,54 +476,6 @@
   </section>
 </div><!-- /tab-ajustes-content -->
 
-<!-- ════════════════════════════════════════════ TAB: FACE CAMS ═══ -->
-<div id="tab-facecams-content" class="tab-content">
-  <section class="section">
-    <h3 class="section-title">📸 Facecams</h3>
-    <div class="field-row">
-      <div class="add-facecam-fields">
-        <label class="field-label" for="add-facecam-player-name">Player Name</label>
-        <input type="text" id="add-facecam-player-name" class="input-text" placeholder="Player1">
-        <div class="facecam-player-row">
-          <div class="facecam-platform-select">
-            <label class="field-label" for="add-facecam-platform">Platform</label>
-            <select id="add-facecam-platform" class="input-text">
-              <option value="steam">Steam</option>
-              <option value="epic">Epic Games</option>
-              <option value="playstation">Playstation</option>
-              <option value="xbox">Xbox</option>
-              <option value="nintendo">Nintendo</option>
-            </select>
-          </div>
-
-          <div class="facecam-player-id">
-            <label class="field-label" for="add-facecam-player-id">Player Primary ID</label>
-            <input
-              type="number"
-              id="add-facecam-player-id"
-              class="input-text"
-              placeholder="76561198000000000"
-            >
-          </div>
-        </div>
-        <label class="field-label" for="add-facecam-link">🔗 Link Facecam</label>
-        <input type="text" id="add-facecam-link" class="input-text" placeholder="https://example.com/facecam">
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" id="btn-save-facecam">💾 Save Facecam</button>
-        <button class="btn btn-ghost" id="btn-clear-facecam-form">Clear</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h3 class="section-title">📋 Saved Facecams</h3>
-    <div id="facecams-list" class="facecams-list">
-      <p class="empty-msg" id="facecams-empty">No saved facecams yet.</p>
-    </div>
-  </section>
-</div><!-- /tab-facecams-content -->
-
 <!-- Custom Modal -->
 <div id="modal-container" class="modal-container">
   <div class="modal-box">
@@ -332,6 +493,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

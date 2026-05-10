@@ -339,7 +339,7 @@ html, body {
 .player-facecam-container {
   position: absolute;
   visibility: hidden;
-  top: -210px; left: 0;
+  top: -200px; left: 0;
   width: 254px; height: 200px;
   overflow: hidden;
   background: #000;

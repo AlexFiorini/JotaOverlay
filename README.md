@@ -41,6 +41,7 @@ Spanish instructions available in: [README.es.md](README.es.md)
 *   Automatic overlay compatible with broadcasting software (OBS, Streamlabs Desktop, etc.) using a browser source.
     *   Ingame screen compatible with 1v1, 2v2, 3v3, and 4v4.
     *   Tags with player names, boost, and other stats.
+    *   Players' cameras ([thanks to Alex Fiorini for their contribution 💖](https://github.com/AlexFiorini/)).
     *   Automatic goal screen with goal statistics (scorer, speed, and assist).
     *   Multi-sponsors banner.
     *   Post-match screen with scoreboards and MVP.
