@@ -3,6 +3,9 @@ const WebSocket = require('ws');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const fsp = require('fs/promises');
+const AdmZip = require('adm-zip');
+const { dialog } = require('electron');
 
 const HTTP_PORT = 3000;
 const WS_PORT = 3001;
@@ -639,6 +642,76 @@ function handleControlMessage(msg, ws) {
       broadcastFullState();
       break;
     }
+    
+    case 'import_data': {
+      (async () => {
+        const { path } = msg.data || {};
+        if (!path) return;
+        try {
+          const zipBuffer = await fsp.readFile(path);
+          const zip = new AdmZip(zipBuffer);;
+          const facecamsEntry  = zip.getEntry("facecams.json");
+          const teamsEntry = zip.getEntry("teams.json");
+
+          if (!facecamsEntry || !teamsEntry) {
+            sendImportExportResult(ws, false, 'Zip file is missing required files.');
+            return;
+          }
+          const facecams = JSON.parse(facecamsEntry.getData().toString("utf8"));
+          const teams = JSON.parse(teamsEntry.getData().toString("utf8"));
+
+          if (Array.isArray(facecams)) {
+            savedFacecams = mergeAtTop(
+              savedFacecams,
+              facecams,
+              (a, b) => a.platform === b.platform && a.platformId === b.platformId
+            );
+            await saveFacecams();
+          } else {
+            sendImportExportResult(ws, false, 'facecams.json is not valid.');
+          }
+          if (Array.isArray(teams)) {
+            savedTeams = mergeAtTop(
+              savedTeams,
+              teams,
+              (a, b) => a.name === b.name && a.logo === b.logo
+            );
+            await saveTeams();
+          } else {
+            sendImportExportResult(ws, false, 'teams.json is not valid.');
+          }
+
+          sendImportExportResult(ws, true, 'Data imported successfully.');
+          broadcastFullState();
+        } catch (err) {
+          sendImportExportResult(ws, false, 'Error importing data: ' + err.message);
+        }
+      })();
+      break;
+    }
+
+    case 'export_data': {
+      const zip = new AdmZip();
+      zip.addLocalFile(teamsFile);
+      zip.addLocalFile(facecamsFile);
+
+      dialog.showSaveDialog({
+        title: 'Export Data',
+        defaultPath: 'JotaOverlay-Settings.zip',
+        filters: [
+          { name: 'Zip Files', extensions: ['zip'] }
+        ]
+      }).then(({ canceled, filePath }) => {
+        if (canceled || !filePath) {
+          sendImportExportResult(ws, false, 'Export cancelled.');
+          return;
+        }
+
+        zip.writeZip(filePath);
+        sendImportExportResult(ws, true, 'Data exported successfully.');
+      });
+      break;
+    }
 
     case 'request_state':
       ws.send(JSON.stringify(getFullState()));
@@ -692,6 +765,21 @@ function handleControlMessage(msg, ws) {
     default:
       break;
   }
+}
+
+function sendImportExportResult(ws, result, message) {
+  ws.send(JSON.stringify({
+    type: 'import-export-result',
+    data: { result, message }
+  }));
+}
+
+function mergeAtTop(savedArray, importedArray, isSameItem) {
+  const filteredNew = importedArray.filter(importItem => {
+    return !savedArray.some(savedItem => isSameItem(savedItem, importItem));
+  });
+
+  return [...filteredNew, ...savedArray];
 }
 
 function broadcastFullState() {
