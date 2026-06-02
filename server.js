@@ -660,14 +660,22 @@ function handleControlMessage(msg, ws) {
           const teams = JSON.parse(teamsEntry.getData().toString("utf8"));
 
           if (Array.isArray(facecams)) {
-            savedFacecams = facecams;
-            saveFacecams();
+            savedFacecams = mergeAtTop(
+              savedFacecams,
+              facecams,
+              (a, b) => a.platform === b.platform && a.platformId === b.platformId
+            );
+            await saveFacecams();
           } else {
             sendImportExportResult(ws, false, 'facecams.json is not valid.');
           }
           if (Array.isArray(teams)) {
-            savedTeams = teams;
-            saveTeams();
+            savedTeams = mergeAtTop(
+              savedTeams,
+              teams,
+              (a, b) => a.name === b.name && a.logo === b.logo
+            );
+            await saveTeams();
           } else {
             sendImportExportResult(ws, false, 'teams.json is not valid.');
           }
@@ -763,6 +771,14 @@ function sendImportExportResult(ws, result, message) {
     type: 'import-export-result',
     data: { result, message }
   }));
+}
+
+function mergeAtTop(savedArray, importedArray, isSameItem) {
+  const filteredNew = importedArray.filter(importItem => {
+    return !savedArray.some(savedItem => isSameItem(savedItem, importItem));
+  });
+
+  return [...filteredNew, ...savedArray];
 }
 
 function broadcastFullState() {

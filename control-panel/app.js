@@ -669,6 +669,7 @@ el('btn-import-data').addEventListener('change', () => {
   if (!file) return;
   const filePath = file.path;
   send('import_data', { path: filePath });
+  el('btn-import-data').value = '';
 });
 
 // ── Update Notification dismissal ─────────────────────────────────────────
