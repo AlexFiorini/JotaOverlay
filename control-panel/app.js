@@ -659,6 +659,18 @@ el('input-banner-image').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
+// ── Import and Export Data ───────────────────────────────────────────────────────
+el('btn-export-data').addEventListener('click', () => {
+  send('export_data');
+});
+
+el('btn-import-data').addEventListener('change', () => {
+  const file = el('btn-import-data').files[0];
+  if (!file) return;
+  const filePath = file.path;
+  send('import_data', { path: filePath });
+});
+
 // ── Update Notification dismissal ─────────────────────────────────────────
 el('btn-dismiss-update').addEventListener('click', () => {
   updateBannerDismissed = true;
@@ -1075,6 +1087,9 @@ function connect() {
       el('rl-status').textContent = msg.data.connected
         ? '🎮 RL: Connected'
         : '🎮 RL: Disconnected';
+    } else if (msg.type === 'import-export-result') {
+      el('import-export-result').textContent = msg.data.message;
+      el('import-export-result').style.color = msg.data.result ? 'green' : 'red';
     }
   };
 
