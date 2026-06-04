@@ -458,7 +458,9 @@ function handleMatchCreated(data) {
   state.game.orangeScore = 0;
   state.game.time        = 300;
   state.game.isOT        = false;
-  state.game.number++;
+  if (state.series.blue !== 0 || state.series.orange !== 0) {
+    state.game.number++;
+  }
   state.players    = [];
   state.playerCache = {};
   state.view       = 'hud';
@@ -748,7 +750,7 @@ function handleControlMessage(msg, ws) {
         orange: { name: 'ORANGE TEAM', logo: null }
       };
       state.series = { blue: 0, orange: 0 };
-      state.game = { blueScore: 0, orangeScore: 0, time: 300, isOT: false, number: 0 };
+      state.game = { blueScore: 0, orangeScore: 0, time: 300, isOT: false, number: 1 };
       state.view = 'hud';
       state.playerCache = {};
       state.players = [];
