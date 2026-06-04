@@ -259,6 +259,7 @@ function renderActivePlayer(players, spectated, facecams) {
   setText('bot-stat-shots', p.shots);
   setText('bot-stat-assists', p.assists);
   setText('bot-stat-saves', p.saves);
+  setText('bot-stat-demos', p.demos);
 
   // Bottom right boost
   boostColor = p.team === 0 ? BLUE : ORANGE;

@@ -345,6 +345,7 @@ function handleUpdateState(data) {
     assists: p.Assists ?? p.assists ?? 0,
     saves:   p.Saves   ?? p.saves   ?? 0,
     shots:   p.Shots   ?? p.shots   ?? 0,
+    demos:   p.Demos   ?? p.demos   ?? 0,
     boost:   p.Boost   ?? p.boost   ?? null,
     isPrimary: p.IsPrimary ?? p.isPrimary ?? false,
     isDemolished: p.bDemolished ?? p.isDemolished ?? false
