@@ -50,7 +50,7 @@ function showView(name) {
   }
 
   if (sbImg) {
-    sbImg.src = (name === 'scoreboard') ? '/assets/podium-scoreboard2.png' : '/assets/scoreboard.png';
+    sbImg.src = (name === 'scoreboard') ? '/assets/podium-scoreboard2.png' : sbImg.src;
   }
 
   if (name === 'goal') {
@@ -298,6 +298,15 @@ function applyFullState(data) {
     timerEl.className = game.isOT ? 'timer-ot' : 'timer';
   }
 
+  const scoreboardEl = el('scoreboard-bg');
+  const scoreboardDiv = el('scoreboard');
+
+  if(!scoreboardDiv.classList.contains('view-scoreboard')) {
+    if (scoreboardEl) {
+      scoreboardEl.src = game.isOT ? '/assets/scoreboard-ot.png' : '/assets/scoreboard.png';
+    }
+  }
+
   const series = data.series || { blue: 0, orange: 0 };
   renderSeriesDots('series-dots-blue', series.blue, data.bestOf || 5, 'blue');
   renderSeriesDots('series-dots-orange', series.orange, data.bestOf || 5, 'orange');
@@ -362,6 +371,15 @@ function applyStateUpdate(gameData, players, spectated, facecams) {
   if (timerEl) {
     timerEl.textContent = (game.isOT ? '+' : '') + (game.formattedTime || '5:00');
     timerEl.className = game.isOT ? 'timer-ot' : 'timer';
+  }
+
+  const scoreboardEl = el('scoreboard-bg');
+  const scoreboardDiv = el('scoreboard');
+
+  if(!scoreboardDiv.classList.contains('view-scoreboard')) {
+    if (scoreboardEl) {
+      scoreboardEl.src = game.isOT ? '/assets/scoreboard-ot.png' : '/assets/scoreboard.png';
+    }
   }
 
   renderFacecams(players, facecams || []);
