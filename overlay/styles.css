@@ -144,10 +144,8 @@ html, body {
   font-size: 62px;
   font-weight: 900;
   font-style: italic;
-  color: #550606;
+  color: #f0f0f0;
   letter-spacing: -0.02em;
-  -webkit-text-stroke-width: 1px;
-  -webkit-text-stroke-color: #ff0000;
 }
 
 /* Game Info / Series */
