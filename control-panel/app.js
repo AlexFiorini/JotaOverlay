@@ -545,13 +545,6 @@ el('btn-swap-teams').addEventListener('click', () => {
   send('swap_teams');
 });
 
-el('btn-reset-all').addEventListener('click', async () => {
-  const ok = await customConfirm('Reset Data', 'Are you sure you want to reset ALL match data? This cannot be undone.', 'Reset All');
-  if (ok) {
-    send('reset_all');
-  }
-});
-
 el('btn-default-logo-blue').addEventListener('click', () => {
   pendingLogoBlue = null;
   el('preview-logo-blue').src = '../assets/rl.png';
